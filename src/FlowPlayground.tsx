@@ -149,7 +149,7 @@ export default function FlowPlayground() {
     ? undefined
     : selectedId === "review"
       ? {
-          decision:
+          outcome:
             selectedStatus === "succeeded" ? "approved" : "changes_requested",
           requiredReviewers: 2,
         }

@@ -1,0 +1,89 @@
+# Development scope
+
+Runlane's development action limiter is a scope record for a work item. It states the goal, reason, approach, boundaries, and completion evidence before work expands. Human contributors and coding agents use the same record.
+
+This is a development rule, not a new runtime module. Runtime Actions and their execution limits are defined in [Agents and actions](agents-actions.md), [Routing and loops](routing-loops.md), and [Core concepts](concepts.md).
+
+## Goal
+
+Help developers define reusable agent workflows and understand each execution through a graph and trace. A developer should be able to change an agent, model, script, or stage without editing the runner for each workflow.
+
+The product reference is GitHub Actions for agent workflows. Runlane makes orchestration and execution evidence visible while Pi handles the agent loop.
+
+## Why
+
+Ad hoc scripts and manual handoffs make it difficult to see which agent did what, which input it used, and why the next step started. Runlane records those relationships and presents them in one run view.
+
+Development needs the same discipline. Adding a new agent should not produce another execution engine. Adding a client should not produce another scheduler. A bounded work item gives reviewers a concrete way to distinguish required changes from unrelated expansion.
+
+## How
+
+The agreed design uses trusted `.mjs` definitions, a validated graph, and a retained source version for each run. One runner owns execution state, outcome routing, capacity, and bounded repetition. Pi executes agents. Pi durable is the selected persistence foundation, pending compatibility and transaction evidence.
+
+React Flow displays definitions and recorded execution state. The proposed web and CLI clients share the application service. The CLI remains a recommendation, as recorded in [Decisions and delivery](decisions.md).
+
+Contributors reuse Agent configurations and Action implementations. Keep the shared execution contract small, and keep mutable state on attempts and runs. Extend a module when a current requirement needs new behavior. A hypothetical future consumer does not justify a new framework or package.
+
+## Product boundaries
+
+| Area | Runlane owns | Boundary |
+| --- | --- | --- |
+| Workflow authoring | Stages, configured agents, scripts, triggers, and typed routes. | `.mjs` remains authoritative. Canvas layout changes do not rewrite execution logic. |
+| Orchestration | Admission, attempts, result validation, routing, cancellation, and recovery. | Reuse Pi's agent loop and conversation internals. Keep session management below the product. |
+| Observability | Run history, graph state, trace events, and evidence references. | Show observable execution. Simulated events never prove a live integration. |
+| Persistence | Run identity, ordering, loop counters, and atomic transitions. | Use Pi durable where verified. Avoid a second authoritative conversation store. |
+| Extensions | Agent definitions, prompts, scripts, and declared capabilities. | Load explicitly trusted sources. Validation and working directories are not sandboxes. |
+| Coding workflows | Optional Ticket input, candidate checks, worktrees, review, and publication actions. | Keep those requirements in the coding template, outside the general workflow core. |
+| Deployment | One local application service and its clients. | Hosted runners, distributed scheduling, tenant management, and a plugin marketplace are outside current scope. |
+
+GitHub Actions YAML compatibility, a chat or IDE product, arbitrary JavaScript visual editing, and automatic model fallback are also outside the current direction.
+
+## Limit each work item
+
+Use one scope record in the existing ticket, plan, or PR. Do not create another tracking system. Reuse information already present in the work item. A spelling correction or small documentation repair can state its scope in a sentence.
+
+| Field | Required answer |
+| --- | --- |
+| Goal | What can a developer do or observe after this change? |
+| Why | Which current problem or accepted requirement needs it? |
+| How | What is the smallest change, and what existing module or dependency can be reused? |
+| In scope | Which behavior and owned modules may change? |
+| Boundaries | Which interfaces, invariants, and authoritative records must remain valid? |
+| Out of scope | Which adjacent improvements are deliberately excluded? |
+| Evidence | What permitted checks demonstrate the outcome and its relevant failure behavior? |
+| Done | What observable result ends this work? |
+| Stop or revisit | Which discovery would require a different product decision or more authorization? |
+
+Planning, implementation, and review use this same record. Planning identifies the change and its evidence. Implementation follows that boundary. Review checks the result against the stated outcome and preserved invariants. A useful adjacent improvement can become a separate proposal without delaying completion of the current work.
+
+## Example for the first runtime slice
+
+| Field | Runner proof |
+| --- | --- |
+| Goal | Start one manual workflow with one configured Agent and inspect its live graph and trace. |
+| Why | Prove authoring, execution, persistence, and observation work together before adding more orchestration. |
+| How | Load one trusted workflow, validate and retain its source, invoke Pi, persist the attempt and events, and update the browser. |
+| In scope | The loader, one invocation path, the required durable records, and the graph and inspector updates. |
+| Boundaries | Explicit model and effort, validated input and output, one state owner, retained source, and visible cancellation or interruption. |
+| Out of scope | Parallel stages, repair loops, cron, a visual code editor, PR publication, and a general plugin system. |
+| Evidence | Typecheck, lint, build, and a focused permitted integration check covering the real invocation and the relevant interruption or failure path. |
+| Done | A real result appears in the recorded run and trace. Invalid input or an unavailable model cannot appear as success. A refresh preserves run identity, and interruption does not silently launch duplicate work. |
+| Stop or revisit | Pi durable cannot meet the required atomic transition, the selected Pi version fails the required lifecycle, or source retention requires capabilities outside this slice. Record the evidence and resolve the affected design choice. |
+
+This is the next planned runtime slice, not an instruction to implement it during every task. The current repository implements the documentation site and simulated graph. A planned capability becomes implementation work only when the current task includes it.
+
+## Completion and scope changes
+
+Continue routine implementation choices within the existing authorization. Ask for clarification only when an unresolved choice changes the requested outcome, a product boundary, or an action that needs additional authorization. Pause the affected part and continue independent authorized work.
+
+Keep required validation, recovery, and safety checks. A smaller patch that drops those checks does not satisfy the scope record. Avoid unrelated refactors, speculative abstractions, and dependencies that the current outcome does not require.
+
+Finish when the stated outcome and required evidence are complete. Reopen verification when a new change, failure, or unresolved concern warrants it. Record a discovered limitation without silently adding its solution to the same task.
+
+Use the [verification policy](decisions.md#verification-policy). AI contributors must not write, run, or delegate unit or end-to-end tests. Static checks and permitted integration evidence must be described accurately.
+
+## Keep the rules maintainable
+
+This page owns the development scope rule. [Core concepts](concepts.md) owns module responsibilities. [Decisions and delivery](decisions.md) owns agreed direction, recommendations, and delivery order. Work items own their specific acceptance evidence.
+
+When a decision changes, update its owning document and the affected work item together. Replace obsolete rules instead of accumulating exceptions. `AGENTS.md` and the README link to these documents so contributors can find the same rules without maintaining copies.

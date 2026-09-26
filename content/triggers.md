@@ -1,41 +1,50 @@
-# Start with manual and cron triggers
+# Start runs with triggers
 
-A trigger requests a new workflow run. It sits outside the stages and uses the same admission path regardless of how the request arrives.
+A `Trigger` requests a run of its containing workflow version. Workflow definitions declare triggers separately from their stages. Manual and cron requests use the same validation, frozen snapshot, and admission path.
 
-## Manual trigger
+The `@runlane/sdk` examples are proposed definitions, not working scheduler code. The `Trigger` factories return definitions. They do not create active schedules.
 
-The developer chooses a workflow version, supplies its inputs, resolves the required model profiles, and starts a run. An optional coding template can accept a Ticket and repository; they are not mandatory platform concepts.
+## Define manual and cron triggers
 
-## Cron trigger
+```js
+// A reusable trigger list imported by a workflow module.
+import { Trigger } from "@runlane/sdk";
 
-```json
-{
-  "id": "weekday-audit",
-  "kind": "cron",
-  "expression": "0 9 * * 1-5",
-  "timezone": "Asia/Hong_Kong",
-  "workflowRef": {"id": "dependency-audit", "version": 1},
-  "inputs": {"repositoryRef": "my-project"},
-  "overlapPolicy": "skip-unfinished",
-  "missedRuns": "skip",
-  "enabled": false
-}
+export const triggers = [
+	Trigger.manual({
+		id: "manual-change-review",
+		version: 1,
+	}),
+	Trigger.cron("0 9 * * 1-5", {
+		id: "weekday-dependency-audit",
+		version: 1,
+		timezone: "Asia/Hong_Kong",
+		inputs: { repository: "example/service", task: "Review dependency changes" },
+		overlapPolicy: "skip-unfinished",
+		offlinePolicy: "skip",
+		enabled: false,
+	}),
+];
 ```
 
-This illustrative schedule represents 09:00 on weekdays in Hong Kong, using the five-field [cron convention](https://man7.org/linux/man-pages/man5/crontab.5.html). No schedule is created by this website.
+Pass this list as `triggers` in `new Workflow({ ... })`, or define the same list inline as shown in [Define a workflow](workflows.md).
 
-Show upcoming occurrence times before enabling a schedule. Use a verified cron parser with explicit timezone support; document its daylight-saving behavior before promising calendar correctness.
+The cron expression uses the five-field convention. It describes 09:00 on weekdays in Hong Kong. The disabled definition does not admit scheduled runs. Enabling it must be a separate, explicit application action that validates the workflow, model profiles, inputs, and time zone first.
 
-## Deduplicate before execution
+Use stable trigger IDs and increment the trigger version when its schedule or inputs change. Preview upcoming occurrence times before enabling a cron trigger. Use a cron parser with explicit time-zone support and document its daylight-saving behavior.
 
-Record each occurrence by schedule ID, version, and scheduled UTC instant. Persist its admission decision and the queued run together. Duplicate delivery must refer to the existing occurrence.
+The proposed trigger IDs are unique within a registered project. Check overlap across versions of the same trigger ID. Updating a schedule must not bypass an unfinished run. Apply any shared concurrency key too, such as a coding template's Ticket identity.
 
-Default to skipping an occurrence when the same schedule's previous run remains unfinished, including a wait for user input. Also enforce any explicit shared concurrency key. The coding template can use a Ticket identity as that key.
+## Admit each occurrence once
 
-Skip missed times while the service is offline. The first local runner does not promise to wake a sleeping computer or install an OS background service.
+Within the registered project, identify a cron occurrence by trigger ID, trigger version, and scheduled UTC instant. Persist the occurrence and its admission decision atomically with any queued run. If delivery repeats, return the existing occurrence instead of creating a second run.
 
-## A new run is not a loop
+`overlapPolicy: "skip-unfinished"` skips an occurrence while the previous run from that trigger remains nonterminal, including when it waits for user input. `offlinePolicy: "skip"` discards occurrences that pass while the scheduler is offline. The scheduler does not catch up missed times or wake a sleeping computer.
 
-Cron creates a new run with frozen inputs and fresh execution state. A bounded loop continues its current run. Both share global model capacity and action policies.
+Manual requests can supply workflow inputs when the user starts a run. Cron inputs come from the trigger definition. Both paths validate required inputs and resolve the exact workflow version before creating an immutable run snapshot.
 
-GitHub event triggers and remote runners are future integration decisions. The GitHub Actions comparison does not imply compatibility with its event API or workflow syntax.
+## Share application capacity
+
+Manual and cron runs share application-wide limits. The defaults are two active runs and two concurrent model calls, and the application can configure both values. Work that exceeds either limit waits in a visible queued state. Triggers do not create separate capacity pools.
+
+GitHub event triggers and remote runners are later integration decisions. The GitHub Actions comparison does not promise compatibility with its event API or workflow syntax.

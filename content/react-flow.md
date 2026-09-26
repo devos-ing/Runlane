@@ -8,7 +8,7 @@ The example below uses the real `@xyflow/react` library. Drag nodes to explore l
 
 ## From definitions to nodes
 
-A node has an ID, a position, a type, and data. Our custom node renders the stage or agent label, model alias, and execution status. Review bindings appear inside their parent review stage.
+A node has an ID, a position, a type, and data. Our custom node renders the stage or agent label, model alias, and execution status. Assigned reviewers appear inside their parent review stage.
 
 ```tsx
 const node = {
@@ -27,11 +27,15 @@ const node = {
 | Execution data | Presentation data |
 | --- | --- |
 | Stage IDs and validated routes | Node positions and viewport |
-| Agent/model bindings | Selection and expanded details |
+| Assigned agents and resolved models | Selection and expanded details |
 | Run status and attempt results | Colors, labels, and grouping |
 | Trace event identity | Inspector tab and local filters |
 
-Keep the workflow definition as the source of execution semantics. Store layout separately by stable ID. In a future editor, an added connection proposes a route; the server validates it before it becomes executable.
+The `.mjs` workflow is the authoring source. The loader produces a validated graph description from its exported definition. React Flow reads that description. It does not parse arbitrary JavaScript to discover control flow.
+
+Store layout separately by stable ID. Moving nodes affects presentation only. The first version does not add execution edges or rewrite source files from the canvas. Arbitrary JavaScript cannot reliably round-trip through a visual editor.
+
+For an active run, display its frozen graph and source version. A changed workflow file updates the definition preview and future runs without changing an existing run's graph.
 
 ## Project run events onto the graph
 

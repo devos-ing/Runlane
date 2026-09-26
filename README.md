@@ -4,6 +4,12 @@ A local Markdown documentation website for Runlane, a workflow automation and ob
 
 Pi SDK execution and Pi durable persistence are planned integrations. This site does not implement the workflow runner or those integrations.
 
+The agreed design uses `.mjs` workflow files to compose stages, configured agents, direct actions, and triggers. React Flow displays the validated graph and each run's trace. Execution changes happen in source files; canvas changes affect layout.
+
+Read [the glossary](CONTEXT.md), [workflow authoring](content/workflows.md), and [decisions and delivery](content/decisions.md) for the current design. The `@runlane/sdk` examples are proposed APIs, not an available package.
+
+Before planning development, read [Development scope](content/development-scope.md). It defines the goal, reason, approach, boundaries, and completion evidence for each work item. [AGENTS.md](AGENTS.md) points coding agents to the same rules.
+
 ## Start the site
 
 Use Bun to install the pinned dependencies and start the local server:
@@ -17,7 +23,7 @@ Open [the local documentation](http://127.0.0.1:4173/). The server binds to loop
 
 ## Edit the documentation
 
-The ten pages live in [content](content). Edit the `.md` files directly. Add a page to the small navigation list in [src/docs.ts](src/docs.ts) when creating a new document.
+The documentation pages live in [content](content). Edit the `.md` files directly. Add a page to the small navigation list in [src/docs.ts](src/docs.ts) when creating a new document.
 
 Use ordinary Markdown headings, tables, links, and fenced examples. A standalone `<!-- playground -->` line inserts the React Flow example. Markdown does not execute JavaScript or arbitrary embedded components.
 
@@ -52,7 +58,7 @@ The production build also runs TypeScript checks. These checks validate the docu
 
 ## Evidence and limits
 
-- Implemented: ten Markdown pages, navigation/search, source links, responsive reading layout, and the React Flow demonstration.
+- Implemented: Markdown pages, navigation/search, source links, responsive reading layout, and the React Flow demonstration.
 - Verified: TypeScript, Biome, and the production build. The browser rendered the documentation and graph without reported console errors during the earlier local inspection.
 - Visual evidence: desktop page inspection and narrow-viewport layout/containment inspection during the earlier local inspection.
 - Unverified: live agent execution, persistence integration, real model limits, script execution, and scheduling. Those remain product implementation work.

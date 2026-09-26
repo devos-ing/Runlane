@@ -57,7 +57,7 @@ export const executionDetails: Record<
   },
   review: {
     title: "Review stage",
-    model: "2 read-only bindings",
+    model: "2 read-only reviewers",
     purpose:
       "Wait for every designated Reviewer. The parent stage holds no model slot.",
     input: {
@@ -253,7 +253,7 @@ const opening: TraceEvent[] = [
     type: "agent.completed",
     message: "Validated an implementation plan.",
     updates: { plan: "succeeded" },
-    output: { decision: "ready", artifactRef: "demo-plan", steps: 3 },
+    output: { outcome: "ready", artifactRef: "demo-plan", steps: 3 },
   },
   {
     id: "evt-005",
@@ -303,7 +303,7 @@ export const successTrace: TraceEvent[] = [
     message: "Correctness reviewer approved the candidate.",
     updates: { "review.correctness": "succeeded" },
     output: {
-      decision: "approved",
+      outcome: "approved",
       findings: [],
       inputTokens: 1240,
       outputTokens: 186,
@@ -317,7 +317,7 @@ export const successTrace: TraceEvent[] = [
     type: "agent.completed",
     message: "Maintainability reviewer approved. All required reviews passed.",
     updates: { review: "succeeded", "review.maintainability": "succeeded" },
-    output: { decision: "approved", findings: [] },
+    output: { outcome: "approved", findings: [] },
     attempt: 1,
   },
   {
@@ -349,7 +349,7 @@ export const repairTrace: TraceEvent[] = [
     message: "Reviewer requested clearer empty-state handling.",
     updates: { "review.correctness": "failed" },
     output: {
-      decision: "changes_requested",
+      outcome: "changes_requested",
       findings: ["Handle an empty navigation list."],
     },
     attempt: 1,
@@ -362,7 +362,7 @@ export const repairTrace: TraceEvent[] = [
     message:
       "Second reviewer approved; the combined round requests one repair.",
     updates: { review: "failed", "review.maintainability": "succeeded" },
-    output: { decision: "approved", findings: [] },
+    output: { outcome: "approved", findings: [] },
     attempt: 1,
   },
   {
@@ -408,7 +408,7 @@ export const repairTrace: TraceEvent[] = [
     type: "agent.completed",
     message: "Correctness reviewer approved candidate 2.",
     updates: { "review.correctness": "succeeded" },
-    output: { decision: "approved", findings: [] },
+    output: { outcome: "approved", findings: [] },
     attempt: 2,
   },
   {
@@ -418,7 +418,7 @@ export const repairTrace: TraceEvent[] = [
     type: "agent.completed",
     message: "All reviewers approved candidate 2.",
     updates: { review: "succeeded", "review.maintainability": "succeeded" },
-    output: { decision: "approved", findings: [] },
+    output: { outcome: "approved", findings: [] },
     attempt: 2,
   },
   {

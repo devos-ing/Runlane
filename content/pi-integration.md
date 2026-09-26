@@ -4,9 +4,9 @@ Pi is the selected agent execution engine. Pi durable is the selected persistenc
 
 ## The agent execution boundary
 
-Reuse the full coding-agent SDK for its agent loop, selected model, tools, events, resource loading, and lifecycle controls. A small adapter turns a resolved agent binding into an invocation and translates its observable events into our trace contract. [Pi SDK](https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/sdk.md)
+Reuse the full coding-agent SDK for its agent loop, selected model, tools, events, resource loading, and lifecycle controls. A small adapter turns a configured Agent into an invocation and translates its observable events into our trace contract. [Pi SDK](https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/sdk.md)
 
-Use Pi's model runtime for provider/model lookup and supported authentication. The application validates a binding and records the actual model and effort; it never silently substitutes an unavailable model. [Model selection](https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/examples/sdk/02-custom-model.ts)
+Use Pi's model runtime for provider/model lookup and supported authentication. The application validates the agent's configuration and records the actual model and effort; it never silently substitutes an unavailable model. [Model selection](https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/examples/sdk/02-custom-model.ts)
 
 ## Persistence with Pi durable
 
@@ -21,6 +21,8 @@ Pi remains authoritative for its conversation history. Avoid creating a second t
 Reuse approved Pi tools and its extension interface for application-owned structured submission. Contributor definitions select allowed capabilities and result contracts. Load only explicitly trusted resources for managed invocations. [Tool selection](https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/examples/sdk/05-tools.ts), [Extensions](https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/examples/sdk/06-extensions.ts)
 
 Direct scripts remain model-free actions. Workflow routing, schedules, concurrency limits, and the run graph belong to the application.
+
+Runlane also owns the `.mjs` definition loader and retention of each run's source version. Pi conversation persistence does not preserve arbitrary workflow modules, checking scripts, or their dependencies for us.
 
 ## Prove the integration first
 
