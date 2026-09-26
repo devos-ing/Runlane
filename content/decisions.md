@@ -16,7 +16,9 @@ Use [Development scope](development-scope.md) to bound a work item by its goal, 
 - Treat Review as workflow work performed by Reviewer Agents or checking Actions. A Trigger starts a Run; it does not perform review.
 - Author workflows in `.mjs`, with optional `.ts` support. Import reusable agents, scripts, and trigger definitions from trusted sources.
 - Combine instructions, capabilities, Profile reference, effort, and result contract in Agent. A step or parallel assignment identifies where that configuration is used; it does not require a separate public Agent binding type.
-- Use plain definition objects and a shared execution interface for Agent and Action adapters. Add no base class until duplicated behavior justifies one. Advisor, Implementer, and Reviewer remain Agent presets.
+- Keep authoring definitions as plain objects. Use one `Runtime` parent class for coding-agent integrations, with `PiRuntime` first and planned `CodexRuntime` and `ClaudeRuntime` subclasses. Advisor, Implementer, and Reviewer remain Agent presets.
+- Let Agent Profiles select a Runtime and its supported provider/model settings. Preserve `modelProfiles`, `modelProfile`, and explicit Agent effort. Runtime instances belong to the service, outside workflow snapshots.
+- Give Runtime a shared `run` entry point and native validation/execution methods. Keep routing, retries, global capacity, result validation, and checkpoint writes in the Workflow Runner. Script Actions keep their direct execution path.
 - Use one imported result schema as the source of truth for result validation and allowed outcomes. Do not repeat those outcomes in another configuration field.
 - Allow scripts and Advisors to supply decisions through the same result interface. Add Jev after the real workflow and graph work together.
 - Keep confidence rules inside the decision Action that needs them. The runner validates the final result and selects a declared route; it has no generic DecisionPolicy engine.
@@ -24,13 +26,14 @@ Use [Development scope](development-scope.md) to bound a work item by its goal, 
 - Commit accepted decisions and selected routes before advancing. Recovery reuses committed decisions rather than calling a model to select again.
 - Connect the existing React Flow view to real events in the first usable milestone, before Jev integration or desktop packaging.
 - Use React Flow for viewing execution, inspecting trace, and arranging layout. Edit execution logic in source files.
-- Reuse Pi for agent execution and adopt Pi durable for the persistence foundation.
+- Reuse Pi as the first Runtime implementation and Pi durable as the application persistence foundation for all Runtimes.
 - Let contributors add agents, prompts, and scripts through validated definitions.
 - Keep explicit profiles, bounded loops, and defaults of two active runs and two simultaneous model calls across all workspaces.
+- Verify native request control before enabling additional Runtimes under that model-call limit. An external Runtime attempt can contain several requests or subagents; an attempt limit needs a separate, explicit policy decision.
 - Include model-backed decision Actions in that shared capacity. Distinguish valid uncertainty from provider failures and malformed results.
 - Start with a controlled set of retained source files and recorded dependency versions. Edits apply to new runs. Missing or unsupported recovery inputs block execution instead of triggering automatic environment reconstruction.
 - Support independent runs and parallel read-only reviewers. Every designated reviewer must approve in the coding-review template.
-- Keep session management inside the Pi integration. Treat Tickets, worktrees, and PRs as coding-template capabilities.
+- Keep native conversation management inside each Runtime integration. Store opaque execution references for evidence without adding a product-facing session manager. Treat Tickets, worktrees, and PRs as coding-template capabilities.
 
 ## Interface and lifecycle direction
 
@@ -49,8 +52,11 @@ The detailed contract is in [CLI, daemon, and workspaces](cli-workspaces.md); [S
 | Documentation | Markdown site, shared vocabulary, interactive React Flow demonstration. | This preview |
 | A. Execution proof | Workspace registration, foreground service, one tool-free Pi Agent, JSON input/result validation, Pi durable records, CLI status, logs, and cancellation. | Implemented subset; see quickstart |
 | Step naming alignment | Rename the definition, snapshot, and trace fields together, update the runnable example, and preserve access to existing run history. No new execution behavior. | Next; not implemented by this docs change |
+| Runtime extraction | Introduce the parent class and `PiRuntime`, make Profile Runtime selection explicit, centralize result validation, and preserve existing Pi execution and readable history. | After naming alignment, before B; design only |
 | B. Real workflow | Workflow steps execute Plan → Implement → Script checks → parallel Review with one shared two-repair loop. Add `.mjs` and `.sh` Script Actions, and exercise independent runs across two workspaces under shared capacity. | Planned |
 | C. Live observation | Connect the existing React Flow view and inspector to those real records. Show active work, results, failures, and the chosen repair route. | Planned |
+| Codex Runtime | Prove a second subclass with explicit settings, observable events, cancellation, structured results, and enforceable capacity. | After A–C; native integration unverified |
+| Claude Runtime | Reuse the parent contract and verify Claude-specific settings, authentication, tools, events, cancellation, and capacity. | After Codex evidence; native integration unverified |
 | Daemon operation | Manual background start, status, graceful stop, and reconciliation using the same runner and records. | After A–C |
 | Jev Action | Optional decision adapter with local confidence rules, shared model capacity, and normal result validation. | After A–C |
 | Desktop packaging | Package the shared React UI and connect it to the existing local service. | After A–C |
@@ -60,6 +66,8 @@ The detailed contract is in [CLI, daemon, and workspaces](cli-workspaces.md); [S
 The CLI proof pins Pi coding-agent and Pi durable at 0.87.1. A real `openai-codex/gpt-6-luna` invocation with `low` effort produced a validated result. Pi durable document writes and reopen work through the Bun SQLite adapter. [Submit a task](cli-quickstart.md) describes the implemented boundary. The canvas remains simulated.
 
 A–C form the first usable milestone. A alone is an integration proof, not delivery of the workflow product. Preserve both requested forms of parallelism, every designated reviewer's approval, and configurable defaults of two active runs and two model calls across workspaces.
+
+The Runtime parent design is approved, but neither the extraction nor additional integrations are implemented. The first milestone remains Pi-backed. Additional Runtime work does not gate the Pi workflow or its live graph.
 
 Use an isolated example directory for the code-change workflow. Parallel reviewers inspect the same immutable candidate, and independent writing runs use different workspaces. General repository provisioning and PR publication stay in the later coding template.
 
@@ -79,7 +87,28 @@ The authoring vocabulary uses Step now, but the implemented CLI still uses the e
 
 Update the loader, stored snapshots, API and trace shapes, sample definitions, and their documentation together. Preserve IDs, inputs, results, and event history. Existing runs must remain readable without re-execution; handle stored-format versions explicitly rather than silently rewriting historical meaning. Preserve validation, cancellation, capacity, and result-routing behavior.
 
-This is one naming migration, not a reason to add Step constructors, a registry, or a permanent pair of interchangeable authoring fields. Profile remains a data configuration for provider/model selection; the existing `modelProfiles` and `modelProfile` keys do not need an unrelated rename.
+This is one naming migration, not a reason to add Step constructors, a registry, or a permanent pair of interchangeable authoring fields. Profile remains data; the existing `modelProfiles` and `modelProfile` keys do not need an unrelated rename. The Runtime selector and stored execution-reference changes belong to the following extraction slice.
+
+## Runtime extraction and later integrations
+
+The [Runtime parent class](runtimes.md) owns the execution contract. This work replaces the earlier recommendation to use only interfaces for Agent execution. It introduces one parent class, not an inheritance hierarchy for authoring definitions.
+
+| Scope field | Runtime work |
+| --- | --- |
+| Goal and reason | Let one Runner execute an Agent through a selected coding-agent system while keeping workflow behavior and evidence consistent. |
+| Approach | Extract the verified Pi invocation into `PiRuntime extends Runtime`. Put shared identity and cancellation checks in `run`; native validation and execution belong to subclass methods. |
+| Current task | Update design documentation, terminology, and this plan. Add a navigable Runtime page. No executable Runtime implementation or dependency change. |
+| Next implementation | Introduce the parent and Pi subclass, explicit Profile Runtime ID, versioned execution metadata, and common result validation. Update the runnable example and quickstart with the code. |
+| Boundaries | Preserve exact model and effort, capability restrictions, cancellation during startup, atomic completion, global capacity, and interruption without automatic replay. Keep historical records readable. |
+| Exclusions | Codex and Claude execution in the Pi extraction, a plugin loader, shared process pools, public SDK packaging, native transcript migration, and a session-management UI. |
+| Current completion evidence | Documentation links and navigation agree, stale no-base-class guidance is removed, and lint/typecheck/site build pass. These checks do not verify the proposed integrations. |
+| Implementation completion evidence | One focused permitted integration check through the real Pi subclass covers accepted execution plus unsupported settings, invalid output, startup cancellation, interruption, and historical record access. No unit or end-to-end tests. |
+
+The extraction moves provider lookup and Pi's `ModelRuntime` behind `PiRuntime`. It moves final schema and outcome-route checks into the Runner so later subclasses cannot bypass them. Preserve the same sanitization and cleanup requirements. New snapshots record Runtime ID, implementation version, and resolved settings; legacy slice-A records are identified explicitly as Pi records without re-execution or rewriting their original evidence.
+
+The Codex slice then proves that two subclasses satisfy the same contract. Verify native permission enforcement and model-call accounting before enabling admission; limit claims must include native subagents and retries. If the protocol cannot enforce the agreed model-call policy, record that blocker and decide separately whether an attempt-based policy is acceptable. Claude follows the same acceptance boundary after Codex provides concrete evidence.
+
+Both integrations must preserve Runlane's result schema, observable progress, bounded errors, cancellation, and checkpoint rules. Native session IDs are evidence, not automatic restart instructions. Authentication and native session ownership stay inside each integration.
 
 ## First usable milestone
 
@@ -97,7 +126,7 @@ Keep four core responsibilities: load and validate definitions, run the workflow
 
 The five authoring components describe what contributors configure; these four responsibilities describe how the runtime implements them. Steps, Scripts, and Review do not add three more engines.
 
-Retain schema validation, explicit model selection, source identity, cancellation, global capacity, and atomic transitions. Defer a universal policy engine, an inheritance framework, an expression engine, and automatic dependency or environment reconstruction. Extract another shared module only when real implementations repeat the same behavior.
+Retain schema validation, explicit model selection, source identity, cancellation, global capacity, and atomic transitions. The Runtime parent is the one agreed execution base class. Defer a universal policy engine, additional class hierarchies, an expression engine, and automatic dependency or environment reconstruction. Extract another shared module only when real implementations repeat the same behavior.
 
 ## Resolve before the next slice
 
@@ -110,13 +139,13 @@ Slice A resolved the initial model invocation, workspace/run document mapping, S
 
 Jev provider selection, its confidence settings, and desktop packaging are later decisions. They do not block the execution proof or live graph.
 
-These questions do not justify building a plugin framework or a second agent runtime. Resolve them with bounded integration evidence and a concrete workflow.
+These questions do not expand the Runtime extraction into a plugin framework or require us to recreate a native agent loop. Resolve them with bounded integration evidence and a concrete workflow.
 
 ## Verification policy
 
 AI contributors must not write, run, or delegate unit or end-to-end tests. Use typechecking, lint, build, and the smallest permitted integration check for load-bearing runtime behavior. Browser screenshots can support visual inspection; they do not prove live agent execution.
 
-The website's canvas is a deterministic client-side demonstration. The separate CLI proof has a foreground backend, real Pi execution, and Pi durable storage. It has no active cron jobs, background daemon launcher, ScriptAction executor, multi-step runner, or live graph connection.
+The website's canvas is a deterministic client-side demonstration. The separate CLI proof has a foreground backend, real Pi execution, and Pi durable storage. It has no Runtime parent class, Codex or Claude Runtime, active cron jobs, background daemon launcher, ScriptAction executor, multi-step runner, or live graph connection.
 
 ## Maintain this site
 

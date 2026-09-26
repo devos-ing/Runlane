@@ -10,7 +10,7 @@ The examples below use the target Step vocabulary and `stepId`. The current CLI 
 | --- | --- |
 | `run.started` | The workspace, frozen definition, source version, and input selected for execution. |
 | `step.started` | The step now eligible to perform work. |
-| `agent.started` | The assigned agent and resolved model holding a slot. |
+| `agent.started` | The assigned Agent, selected Runtime, confirmed model and effort, and available native execution reference. |
 | `action.started` | The action attempt, its adapter, and any profile using shared capacity. |
 | `action.completed` | A tool, script, or decision-model result and its evidence references. |
 | `action.failed` | An execution or result-validation failure, distinct from a valid uncertain decision. |
@@ -18,7 +18,7 @@ The examples below use the target Step vocabulary and `stepId`. The current CLI 
 | `route.selected` | The validated final outcome and committed destination. |
 | `run.needs_input` | A blocker or exhausted loop that requires a decision. |
 
-These event names are proposed application contracts. They are not a claim that Pi emits the same names.
+These event names are proposed application contracts. They are not a claim that Pi, Codex, or Claude emits the same names. Each Runtime translates native progress; the Runner attributes, orders, and persists application events.
 
 ## Event shape
 
@@ -39,6 +39,8 @@ These event names are proposed application contracts. They are not a claim that 
 The workspace ID attributes the event to its registered context. A run's attempts and artifacts retain that ownership. Workflow names and node IDs from another workspace cannot match this run accidentally.
 
 The assignment ID identifies an agent's place in the step. It distinguishes two uses of the same Agent definition without introducing a separate public Agent binding type.
+
+The planned Runtime integration records its ID and implementation version with each attempt's resolved settings. Native execution references remain opaque and omit credentials. A reference identifies evidence; it does not authorize replay or transfer conversation state between Runtimes. The [Runtime contract](runtimes.md#events-and-completion) defines startup and completion ordering.
 
 Large inputs, outputs, and logs belong in artifacts. Events carry bounded summaries and references. Display provider-reported usage honestly; missing usage stays unavailable. Never present hidden model reasoning as an observable trace.
 

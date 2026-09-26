@@ -30,7 +30,15 @@ An Agent preset that produces a plan or decision for a workflow.
 _Avoid_: Route
 
 **Profile**:
-A saved provider and model selection referenced by an Agent or a model-backed Action.
+Saved execution settings referenced by an Agent or a model-backed Action. An Agent Profile selects a Runtime and its supported provider and model settings.
+
+**Runtime**:
+The execution system selected for an Agent attempt, responsible for its agent loop, native context, and observable progress.
+_Avoid_: AgentHarness as another object, or Workflow Runner as a synonym
+
+**Workflow Runner**:
+The coordinator that admits and schedules workflow work, validates results, and records routes, loop counters, and execution state.
+_Avoid_: Runtime as a synonym
 
 **Action**:
 A capability executed directly by a step or made available to an Agent, such as a tool, script, model decision, or application-owned operation.

@@ -14,6 +14,8 @@ One process owns the user's Runlane state directory. Starting the daemon when it
 
 Default limits of two active runs and two simultaneous model calls apply across all workspaces. Two workspaces do not receive two model slots each. Parallel reviewers, independent runs, and model-backed decision Actions share that capacity. The queue must give eligible work from other workspaces a chance to progress.
 
+The service also owns the planned Runtime instances selected by Agent Profiles. Instances share these limits across workspaces and keep mutable attempt state separate. External Runtime admission requires evidence that native requests and subagents respect the configured limit; an invocation count alone is insufficient. See [Runtime parent class](runtimes.md).
+
 An idle daemon does not invoke models. A workspace's failed run is recorded without stopping unrelated runs. A service crash can interrupt work in several workspaces, so each run needs durable recovery evidence.
 
 ## A workspace is a registered context

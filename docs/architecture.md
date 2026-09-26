@@ -40,3 +40,9 @@ The documentation dev server excludes `.scratch` in addition to Vite's normal pr
 Definitions support one tool-free Agent step, explicit built-in profiles, synchronous object schemas, and terminal `on` routes. Model output must be one JSON object matching its result schema. Other graph shapes are rejected. Source imports execute trusted JavaScript; the loader process is not a security sandbox.
 
 The current entry point is `bun run runlane`. A globally installed CLI, background launcher, generic plugin system, ScriptAction executor, multi-step workflow, parallel reviewers, bounded repair, Jev, cron, and live graph remain outside this implementation. See [the slice-A specification](specs/cli-submission.md) and [the quickstart](../content/cli-quickstart.md).
+
+## Planned Runtime extraction
+
+The agreed [Runtime parent class](../content/runtimes.md) is not implemented here. After Step naming alignment, extract `runtime/agent.ts` into `PiRuntime extends Runtime`, move result-schema and route checks into the shared Runner path, and add an explicit Runtime ID to Agent Profiles. Pi's `ModelRuntime` becomes private to the Pi subclass. Version snapshots and native execution references while preserving existing Pi run history without replay.
+
+Codex and Claude subclasses follow the first usable milestone and require their own integration evidence. Workflow scheduling, capacity, and Pi durable application storage remain shared. The [delivery plan](../content/decisions.md#runtime-extraction-and-later-integrations) owns the scope and acceptance requirements.

@@ -1,6 +1,6 @@
 # Define agents and actions
 
-An Agent is reusable configuration for a Pi invocation. An Action is an executable operation; a Script Action implements that operation using a file and interpreter. Workflow steps refer to an Agent or Action through `run`. Script is not another core execution component. Definitions are plain objects, without a required base class.
+An Agent is reusable configuration for an invocation through its selected Runtime. An Action is an executable operation; a Script Action implements that operation using a file and interpreter. Workflow steps refer to an Agent or Action through `run`. Script is not another core execution component. Authoring definitions remain plain objects. The planned execution integrations extend the [Runtime parent class](runtimes.md).
 
 The CLI proof loads one Agent with imported JSON schemas and no tools. The reusable and multi-step examples below describe the broader design; ScriptAction is not implemented yet. [Submit a task](cli-quickstart.md) documents the runnable subset. Public SDK packaging and constructor helpers remain deferred.
 
@@ -23,7 +23,9 @@ export const advisor = {
 };
 ```
 
-The Profile resolves to an explicit provider and model. Its current configuration fields remain `modelProfiles` and `modelProfile`, with reasoning effort explicit on the Agent. An unavailable Profile blocks the invocation. Advisor, Implementer, and Reviewer are presets, not subclasses. Reuse configuration with imports and object spread. Mutable attempts, outputs, and status belong to the run.
+The current Profile resolves to an explicit Pi provider and model. The target Profile also selects a Runtime by ID, while keeping `modelProfiles` and `modelProfile` and reasoning effort explicit on the Agent. Runtime validates that it supports the requested settings and capabilities. An unavailable Profile blocks the invocation. Advisor, Implementer, and Reviewer are presets, not subclasses. Reuse configuration with imports and object spread. Mutable attempts, outputs, and status belong to the run.
+
+Runtime subclasses implement native validation and execution. Agent authors reuse registered Runtimes without writing a subclass. A Profile change applies to new runs; admitted attempts keep their recorded Runtime, model, effort, and implementation version. [Runtime parent class](runtimes.md) separates the target contract from the current Pi-only CLI.
 
 ## Define each result schema once
 

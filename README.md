@@ -19,6 +19,8 @@ The agreed design uses `.mjs` workflow files to compose steps, configured agents
 
 The five authoring components are Workflow, Agent, Action, Trigger, and Profile. A Step is an identified position inside a Workflow. Script is an Action implementation, with planned `.mjs` and `.sh` support; Review is work performed by Agents or Actions. The current CLI still uses `stages`, `entryStage`, and `stageId`. The design documents use their target Step names, and the migration is explicitly planned before slice B.
 
+The agreed [Runtime parent class](content/runtimes.md) provides the Agent execution extension, with planned Pi, Codex, and Claude subclasses. Agent Profiles select a Runtime by ID. The parent class and selector are not implemented: Pi extraction follows Step naming alignment, and additional integrations follow the first usable milestone. The [delivery plan](content/decisions.md#runtime-extraction-and-later-integrations) records the migration and integration checks.
+
 [Routing and loops](content/routing-loops.md) defines final outcomes and explicit destinations. The current runner accepts only completion or `needs_input` from one Agent. Multi-step routes, scripts, bounded loops, and Jev remain planned.
 
 The first usable milestone combines CLI control, a real workflow with checks and parallel review, a bounded repair loop, and the existing React Flow view connected to live records. A foreground service manages workspaces and shared capacity. Background daemon launch, Jev, desktop packaging, and cron follow that milestone. Read [CLI, daemon, and workspaces](content/cli-workspaces.md) for ownership and lifecycle rules.
