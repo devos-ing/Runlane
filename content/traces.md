@@ -2,14 +2,16 @@
 
 The trace answers a developer's practical questions: what is running, what input did it receive, what did it do, and why did the workflow move or stop?
 
+The examples below use the target Step vocabulary and `stepId`. The current CLI proof retains `stageId` in its snapshot and `run.started` data. It does not emit the proposed `step.started` event yet. The naming migration must preserve existing run and event history without re-execution.
+
 ## Observable events
 
 | Event | What it explains |
 | --- | --- |
 | `run.started` | The workspace, frozen definition, source version, and input selected for execution. |
-| `stage.started` | The stage now eligible to perform work. |
+| `step.started` | The step now eligible to perform work. |
 | `agent.started` | The assigned agent and resolved model holding a slot. |
-| `action.started` | The action attempt, its adapter, and any model profile using shared capacity. |
+| `action.started` | The action attempt, its adapter, and any profile using shared capacity. |
 | `action.completed` | A tool, script, or decision-model result and its evidence references. |
 | `action.failed` | An execution or result-validation failure, distinct from a valid uncertain decision. |
 | `agent.completed` | A validated result and provider-reported usage when available. |
@@ -25,7 +27,7 @@ These event names are proposed application contracts. They are not a claim that 
   "id": "event-042",
   "workspaceId": "ws_app",
   "runId": "run-017",
-  "stageId": "review",
+  "stepId": "review",
   "assignmentId": "correctness",
   "type": "agent.completed",
   "attempt": 1,
@@ -36,7 +38,7 @@ These event names are proposed application contracts. They are not a claim that 
 
 The workspace ID attributes the event to its registered context. A run's attempts and artifacts retain that ownership. Workflow names and node IDs from another workspace cannot match this run accidentally.
 
-The assignment ID identifies an agent's place in the stage. It distinguishes two uses of the same Agent definition without introducing a separate public Agent binding type.
+The assignment ID identifies an agent's place in the step. It distinguishes two uses of the same Agent definition without introducing a separate public Agent binding type.
 
 Large inputs, outputs, and logs belong in artifacts. Events carry bounded summaries and references. Display provider-reported usage honestly; missing usage stays unavailable. Never present hidden model reasoning as an observable trace.
 
@@ -51,7 +53,7 @@ This proposed event shows a later Jev Action that mapped a valid but uncertain p
 	"id": "event-043",
 	"workspaceId": "ws_app",
 	"runId": "run-017",
-	"stageId": "choose-path",
+	"stepId": "choose-path",
 	"attemptId": "attempt-007",
 	"type": "action.completed",
 	"sourceId": "choose-path",

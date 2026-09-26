@@ -1,6 +1,6 @@
 # Reuse Pi and Pi durable
 
-The CLI proof pins Pi coding-agent and Pi durable at 0.87.1. Pi executes one tool-free Agent, and Pi durable stores workspace and run checkpoint documents through a small Bun SQLite facade. The broader multi-stage mapping remains future work.
+The CLI proof pins Pi coding-agent and Pi durable at 0.87.1. Pi executes one tool-free Agent, and Pi durable stores workspace and run checkpoint documents through a small Bun SQLite facade. The broader multi-step mapping remains future work.
 
 ## Verified slice-A mapping
 
@@ -8,7 +8,7 @@ Each Runlane workspace and run is a Pi durable session-scoped document. A run ch
 
 Bun's missing-row result is normalized to the `undefined` required by Pi durable's facade. The database uses WAL and `synchronous=FULL`. A separate SQLite exclusive transaction holds service ownership for the process lifetime; it has no expiring lease. File permissions and the local bearer token protect the service connection.
 
-The proof has executed `openai-codex/gpt-6-luna` with `low` effort, using configured Pi authentication and no tools or discovered workspace resources. [Submit a task](cli-quickstart.md) explains how to run the example. These results do not verify ScriptAction, multi-stage recovery, or cron.
+The proof has executed `openai-codex/gpt-6-luna` with `low` effort, using configured Pi authentication and no tools or discovered workspace resources. [Submit a task](cli-quickstart.md) explains how to run the example. These results do not verify ScriptAction, multi-step recovery, or cron.
 
 ## The agent execution boundary
 
@@ -38,7 +38,7 @@ Runlane also owns the `.mjs` definition loader and retention of each run's sourc
 
 Jev is a later decision source, after the real workflow and live graph. Its Action adapter uses the provider's decision interface, applies its own confidence rules, and returns the final result with evidence. Do not assume that a decision-model endpoint accepts Pi's conversational or tool-loop protocol.
 
-Keep ordinary Agent execution in Pi. The Jev path shares attempt records, the global model-call limit, timeout and cancellation handling, reported usage, and durable decision evidence. It does not create a second agent runtime. Model profiles select an explicit provider and version, and the adapter validates the capabilities it requires.
+Keep ordinary Agent execution in Pi. The Jev path shares attempt records, the global model-call limit, timeout and cancellation handling, reported usage, and durable decision evidence. It does not create a second agent runtime. Profiles select an explicit provider and version, and the adapter validates the capabilities it requires.
 
 The runner validates the final result against its imported schema and commits the declared route. It has no generic confidence-policy module. A Jev Action can convert valid uncertainty to `needs_input`; provider failures remain failures. The [routing design](routing-loops.md) defines that interface. Jev integration has not been implemented or verified in this repository.
 

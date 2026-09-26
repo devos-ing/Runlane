@@ -80,12 +80,12 @@ function ExecutionCard({ data, selected }: NodeProps<FlowNode>) {
   );
 }
 
-/** Groups independent reviewer nodes under their shared Stage completion rule. */
+/** Groups independent reviewer nodes under their shared step completion rule. */
 function ReviewGroup({ data }: NodeProps<FlowNode>) {
   return (
     <div className={`review-group status-${data.status}`}>
       <div className="review-group-label">
-        <span>Review stage</span>
+        <span>Review step</span>
         <span>ALL</span>
       </div>
       <Handle type="source" position={Position.Bottom} id="repair" />

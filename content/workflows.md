@@ -1,8 +1,10 @@
 # Define a workflow
 
-A workflow is a plain object exported from a trusted `.mjs` module. It declares stages and maps result outcomes to destinations through `on`. Agents and Actions are reusable configuration values referenced by those stages.
+A workflow is a plain object exported from a trusted `.mjs` module. It declares steps and maps result outcomes to destinations through `on`. Agents and Actions are reusable configuration values referenced by those steps.
 
-The plain-object format is supported by the single-Agent CLI proof. The multi-stage example below remains a design proposal; use [Submit a task](cli-quickstart.md) for the runnable subset. There is no public SDK, constructor hierarchy, or global contract registry. The current loader accepts `.mjs` only.
+The example below uses the target `steps` and `entryStep` fields. The current CLI proof still requires `stages` and `entryStage`; it does not accept the renamed fields yet. Use [Submit a task](cli-quickstart.md) and its checked-in example for the runnable subset. There is no standalone Step class, public SDK, or global Step registry.
+
+A step's `id` identifies an execution position within this workflow. The same Agent or Action can appear in more than one position without sharing attempt state. Routes and loop entry refer to these local IDs.
 
 ## A bounded review workflow
 
@@ -20,15 +22,15 @@ export const changeReview = {
 	id: "change-review",
 	version: 1,
 	input: taskInput,
-	entryStage: "plan",
+	entryStep: "plan",
 	triggers: [{ kind: "manual", id: "manual-change-review", version: 1 }],
 	loop: {
 		id: "repair",
-		entryStage: "implement",
+		entryStep: "implement",
 		maxReentries: 2,
 		onExhausted: "needs_input",
 	},
-	stages: [
+	steps: [
 		{
 			id: "plan",
 			run: advisor,
@@ -96,7 +98,7 @@ runlane/
 
 The CLI selects a registered Workspace before validation or execution. Workflow IDs are local to that workspace. The service records ownership; shared modules do not hard-code workspace IDs.
 
-Definitions contain data and source references. Importing `.mjs` still executes JavaScript, so roots and dependencies must be explicitly trusted. Reading a definition is not an instruction to start its stages or enable its schedules. Put runtime behavior in referenced Agents and Actions so it has an attributable attempt and trace.
+Definitions contain data and source references. Importing `.mjs` still executes JavaScript, so roots and dependencies must be explicitly trusted. Reading a definition is not an instruction to start its steps or enable its schedules. Put runtime behavior in referenced Agents and Actions so it has an attributable attempt and trace.
 
 ## Route results without a policy framework
 
@@ -106,7 +108,7 @@ A replacement source must satisfy the same input and result schemas. Replacing i
 
 ## Retain a controlled source set
 
-At admission, freeze resolved definitions and schemas, input references, model profiles, source identity, and the execution directory. Retain the explicitly supported workflow modules, prompts, scripts, schemas, and lockfile in an immutable source directory or a small retained copy. Record adapter and dependency versions used by the invocation.
+At admission, freeze resolved definitions and schemas, input references, profiles, source identity, and the execution directory. Retain the explicitly supported workflow modules, prompts, scripts, schemas, and lockfile in an immutable source directory or a small retained copy. Record adapter and dependency versions used by the invocation.
 
 The first milestone supports one known source set and an existing, verified dependency environment. Imports or resources outside that supported set block admission. It does not discover and bundle arbitrary transitive dependencies, build containers, reconstruct environments, or serialize closures.
 

@@ -10,9 +10,12 @@ Use [Development scope](development-scope.md) to bound a work item by its goal, 
 - Deliver the CLI and runner foundation first, with durable trace from the first real invocation.
 - Use one local service per operating-system user to manage all registered workspaces. Foreground and daemon modes use the same runner.
 - Define Workspace as a stable identity, display name, and source root. Scope workflows, schedules, runs, and evidence to it.
-- Use Workflow → Stages → Agents → Actions, with direct actions where no model is needed.
+- Use five authoring components: Workflow, Agent, Action, Trigger, and Profile.
+- Keep `steps` inside Workflow as identified execution positions. A Step references Agents or Actions and has no standalone class or registry.
+- Treat Script as an Action implementation, with planned `.mjs` and `.sh` support through explicit interpreters.
+- Treat Review as workflow work performed by Reviewer Agents or checking Actions. A Trigger starts a Run; it does not perform review.
 - Author workflows in `.mjs`, with optional `.ts` support. Import reusable agents, scripts, and trigger definitions from trusted sources.
-- Combine instructions, capabilities, model profile, effort, and result contract in Agent. Stage assignment identifies where an Agent is used; it does not require a separate public Agent binding type.
+- Combine instructions, capabilities, Profile reference, effort, and result contract in Agent. A step or parallel assignment identifies where that configuration is used; it does not require a separate public Agent binding type.
 - Use plain definition objects and a shared execution interface for Agent and Action adapters. Add no base class until duplicated behavior justifies one. Advisor, Implementer, and Reviewer remain Agent presets.
 - Use one imported result schema as the source of truth for result validation and allowed outcomes. Do not repeat those outcomes in another configuration field.
 - Allow scripts and Advisors to supply decisions through the same result interface. Add Jev after the real workflow and graph work together.
@@ -23,7 +26,7 @@ Use [Development scope](development-scope.md) to bound a work item by its goal, 
 - Use React Flow for viewing execution, inspecting trace, and arranging layout. Edit execution logic in source files.
 - Reuse Pi for agent execution and adopt Pi durable for the persistence foundation.
 - Let contributors add agents, prompts, and scripts through validated definitions.
-- Keep explicit model profiles, bounded loops, and defaults of two active runs and two simultaneous model calls across all workspaces.
+- Keep explicit profiles, bounded loops, and defaults of two active runs and two simultaneous model calls across all workspaces.
 - Include model-backed decision Actions in that shared capacity. Distinguish valid uncertainty from provider failures and malformed results.
 - Start with a controlled set of retained source files and recorded dependency versions. Edits apply to new runs. Missing or unsupported recovery inputs block execution instead of triggering automatic environment reconstruction.
 - Support independent runs and parallel read-only reviewers. Every designated reviewer must approve in the coding-review template.
@@ -37,7 +40,7 @@ Start the service in the foreground during the first runtime slice. One service 
 
 Connect the existing React and React Flow view to the local service early, with a read-only graph and trace inspector. This proves observability without waiting for a desktop shell. Desktop packaging follows later and reuses that UI. A separately delivered web product and a TUI remain optional later clients. Feature parity is not required.
 
-The detailed contract and proposed commands are in [CLI, daemon, and workspaces](cli-workspaces.md). No CLI, daemon, or desktop runtime is implemented by this documentation site. Desktop framework selection, login startup, and operating-system service installers remain later decisions.
+The detailed contract is in [CLI, daemon, and workspaces](cli-workspaces.md); [Submit a task](cli-quickstart.md) documents the implemented foreground CLI. Background daemon commands and Desktop packaging remain planned. The static documentation canvas is not connected to the runtime yet.
 
 ## Delivery sequence
 
@@ -45,7 +48,8 @@ The detailed contract and proposed commands are in [CLI, daemon, and workspaces]
 | --- | --- | --- |
 | Documentation | Markdown site, shared vocabulary, interactive React Flow demonstration. | This preview |
 | A. Execution proof | Workspace registration, foreground service, one tool-free Pi Agent, JSON input/result validation, Pi durable records, CLI status, logs, and cancellation. | Implemented subset; see quickstart |
-| B. Real workflow | A bounded Plan → Implement → Checks → parallel Review example with a shared two-repair loop. Exercise independent runs across two workspaces under shared capacity. | Planned |
+| Step naming alignment | Rename the definition, snapshot, and trace fields together, update the runnable example, and preserve access to existing run history. No new execution behavior. | Next; not implemented by this docs change |
+| B. Real workflow | Workflow steps execute Plan → Implement → Script checks → parallel Review with one shared two-repair loop. Add `.mjs` and `.sh` Script Actions, and exercise independent runs across two workspaces under shared capacity. | Planned |
 | C. Live observation | Connect the existing React Flow view and inspector to those real records. Show active work, results, failures, and the chosen repair route. | Planned |
 | Daemon operation | Manual background start, status, graceful stop, and reconciliation using the same runner and records. | After A–C |
 | Jev Action | Optional decision adapter with local confidence rules, shared model capacity, and normal result validation. | After A–C |
@@ -59,9 +63,23 @@ A–C form the first usable milestone. A alone is an integration proof, not deli
 
 Use an isolated example directory for the code-change workflow. Parallel reviewers inspect the same immutable candidate, and independent writing runs use different workspaces. General repository provisioning and PR publication stay in the later coding template.
 
-The CLI proof loads the single-Agent subset of the plain-object definition format. Multi-stage definitions, scripts, loops, and schedules remain proposals and are rejected by that loader. Public SDK packaging is deferred. Importing author JavaScript executes code, so workspace sources must be trusted.
+The CLI proof loads the single-Agent subset of the plain-object definition format. Multi-step definitions, scripts, loops, and schedules remain proposals and are rejected by that loader. Public SDK packaging is deferred. Importing author JavaScript executes code, so workspace sources must be trusted.
 
 Visual editing of execution logic is deferred. Supporting arbitrary `.mjs` round-tripping would require a separate restricted authoring format or source transformation design.
+
+## Align Step naming before slice B
+
+The authoring vocabulary uses Step now, but the implemented CLI still uses the earlier field names. The planned change is bounded to naming and record compatibility:
+
+| Current CLI field | Target field |
+| --- | --- |
+| `stages` | `steps` |
+| `entryStage` | `entryStep` |
+| `stageId` | `stepId` |
+
+Update the loader, stored snapshots, API and trace shapes, sample definitions, and their documentation together. Preserve IDs, inputs, results, and event history. Existing runs must remain readable without re-execution; handle stored-format versions explicitly rather than silently rewriting historical meaning. Preserve validation, cancellation, capacity, and result-routing behavior.
+
+This is one naming migration, not a reason to add Step constructors, a registry, or a permanent pair of interchangeable authoring fields. Profile remains a data configuration for provider/model selection; the existing `modelProfiles` and `modelProfile` keys do not need an unrelated rename.
 
 ## First usable milestone
 
@@ -77,11 +95,13 @@ Completion means the CLI can control real work and the graph shows the same dura
 
 Keep four core responsibilities: load and validate definitions, run the workflow, execute through adapters, and store records. Workspace registration and source references can be records in that store. Routing and bounded repetition can be data interpreted by the runner. These responsibilities do not require four packages or a class for every domain term.
 
+The five authoring components describe what contributors configure; these four responsibilities describe how the runtime implements them. Steps, Scripts, and Review do not add three more engines.
+
 Retain schema validation, explicit model selection, source identity, cancellation, global capacity, and atomic transitions. Defer a universal policy engine, an inheritance framework, an expression engine, and automatic dependency or environment reconstruction. Extract another shared module only when real implementations repeat the same behavior.
 
 ## Resolve before the next slice
 
-1. How should the current run checkpoint represent multiple stage attempts while keeping transitions and their events atomic?
+1. How should the current run checkpoint represent multiple step attempts while keeping transitions and their events atomic?
 2. Which result schemas do implementation, checks, and review require beyond the demonstrated planning result?
 3. Which controlled script and candidate source set can slice B retain and verify without a general-purpose bundler?
 4. How should the graphical client authenticate to the existing loopback interface with an explicit allowed origin?
@@ -96,7 +116,7 @@ These questions do not justify building a plugin framework or a second agent run
 
 AI contributors must not write, run, or delegate unit or end-to-end tests. Use typechecking, lint, build, and the smallest permitted integration check for load-bearing runtime behavior. Browser screenshots can support visual inspection; they do not prove live agent execution.
 
-The website's canvas is a deterministic client-side demonstration. The separate CLI proof has a foreground backend, real Pi execution, and Pi durable storage. It has no active cron jobs, background daemon launcher, ScriptAction executor, multi-stage runner, or live graph connection.
+The website's canvas is a deterministic client-side demonstration. The separate CLI proof has a foreground backend, real Pi execution, and Pi durable storage. It has no active cron jobs, background daemon launcher, ScriptAction executor, multi-step runner, or live graph connection.
 
 ## Maintain this site
 

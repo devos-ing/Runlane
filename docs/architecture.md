@@ -2,6 +2,8 @@
 
 The repository contains a static documentation site and a separate Bun CLI/service implementation. The React Flow canvas is not connected to the service yet.
 
+The canonical design term is Step. Current code and stored records still use `stages`, `entryStage`, and `stageId`; this document describes that implemented format. The planned rename does not introduce a Step class or registry. The runnable example retains the current keys until the migration is implemented.
+
 ## Runtime modules
 
 | Module | Current responsibility |
@@ -35,6 +37,6 @@ HTTP listens on loopback and requires the private descriptor's bearer token. Bro
 
 The documentation dev server excludes `.scratch` in addition to Vite's normal private-file rules, so local execution evidence and connection descriptors there are not exposed as static files. Keep normal runtime state outside the web project, as the default `~/.runlane` location does.
 
-Definitions support one tool-free Agent stage, explicit built-in model profiles, synchronous object schemas, and terminal `on` routes. Model output must be one JSON object matching its result schema. Other graph shapes are rejected. Source imports execute trusted JavaScript; the loader process is not a security sandbox.
+Definitions support one tool-free Agent step, explicit built-in profiles, synchronous object schemas, and terminal `on` routes. Model output must be one JSON object matching its result schema. Other graph shapes are rejected. Source imports execute trusted JavaScript; the loader process is not a security sandbox.
 
-The current entry point is `bun run runlane`. A globally installed CLI, background launcher, generic plugin system, ScriptAction executor, multi-stage workflow, parallel reviewers, bounded repair, Jev, cron, and live graph remain outside this implementation. See [the slice-A specification](specs/cli-submission.md) and [the quickstart](../content/cli-quickstart.md).
+The current entry point is `bun run runlane`. A globally installed CLI, background launcher, generic plugin system, ScriptAction executor, multi-step workflow, parallel reviewers, bounded repair, Jev, cron, and live graph remain outside this implementation. See [the slice-A specification](specs/cli-submission.md) and [the quickstart](../content/cli-quickstart.md).

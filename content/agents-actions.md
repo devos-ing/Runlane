@@ -1,8 +1,8 @@
 # Define agents and actions
 
-An Agent is reusable configuration for a Pi invocation. A ScriptAction describes a process to run. Workflow stages refer to either through `run`. Definitions are plain objects; runtime adapters share an execution interface without a required base class.
+An Agent is reusable configuration for a Pi invocation. An Action is an executable operation; a Script Action implements that operation using a file and interpreter. Workflow steps refer to an Agent or Action through `run`. Script is not another core execution component. Definitions are plain objects, without a required base class.
 
-The CLI proof loads one Agent with imported JSON schemas and no tools. The reusable and multi-stage examples below describe the broader design; ScriptAction is not implemented yet. [Submit a task](cli-quickstart.md) documents the runnable subset. Public SDK packaging and constructor helpers remain deferred.
+The CLI proof loads one Agent with imported JSON schemas and no tools. The reusable and multi-step examples below describe the broader design; ScriptAction is not implemented yet. [Submit a task](cli-quickstart.md) documents the runnable subset. Public SDK packaging and constructor helpers remain deferred.
 
 ## Define an agent as data
 
@@ -23,7 +23,7 @@ export const advisor = {
 };
 ```
 
-The model profile resolves to an explicit provider and model. An unavailable profile blocks the invocation. Advisor, Implementer, and Reviewer are Agent presets, not subclasses. Reuse configuration with imports and object spread. Mutable attempts, outputs, and status belong to the run.
+The Profile resolves to an explicit provider and model. Its current configuration fields remain `modelProfiles` and `modelProfile`, with reasoning effort explicit on the Agent. An unavailable Profile blocks the invocation. Advisor, Implementer, and Reviewer are presets, not subclasses. Reuse configuration with imports and object spread. Mutable attempts, outputs, and status belong to the run.
 
 ## Define each result schema once
 
@@ -78,7 +78,14 @@ export const maintainability = {
 };
 ```
 
-## Describe a script action
+## Script Actions support mjs and sh
+
+The planned Script Action adapter supports these initial forms. Neither executes in the current CLI proof:
+
+| Script | Explicit executable | Execution |
+| --- | --- | --- |
+| `.mjs` | `bun` | Run the module as the step's script process. |
+| `.sh` | `sh` | Run the file with a POSIX shell. |
 
 ```js
 // actions/check-dependencies.mjs
@@ -97,9 +104,32 @@ export const checkDependencies = {
 };
 ```
 
+The shell variant uses the same Action shape and result schema:
+
+```js
+// actions/check-shell.mjs
+import { candidateInput } from "../schemas/inputs.mjs";
+import { checkResult } from "../schemas/results.mjs";
+
+export const shellCheck = {
+	kind: "script",
+	id: "shell-check",
+	executable: "sh",
+	scriptFile: new URL("../scripts/check.sh", import.meta.url),
+	args: [],
+	timeoutMs: 60_000,
+	input: candidateInput,
+	result: checkResult,
+};
+```
+
+Launch the configured executable, script path, and arguments as an argument array. Do not interpolate workflow input into a `sh -c` command. The file extension does not grant capabilities or create a different timeout, cancellation, or trace path.
+
+An `.mjs` workflow module describes configuration. An `.mjs` Script Action is a process invoked by a step. Loading a trusted definition evaluates its author code, but declaring an Action is not a request to start its script.
+
 Resolve prompt and script URLs against their declaring module. Retain the supported source files for the run. The script's execution directory is a separate setting.
 
-The runner passes bounded JSON on stdin, including workspace, run, stage, and attempt identity, declared inputs, and relevant validated prior results. The script emits one result object on stdout and diagnostics on stderr. Input, output, and diagnostics have size limits.
+The runner passes bounded JSON on stdin, including workspace, run, step, and attempt identity, declared inputs, and relevant validated prior results. The script emits one result object on stdout and diagnostics on stderr. Input, output, and diagnostics have size limits.
 
 ```json
 { "outcome": "pass", "data": { "checkedFiles": 12 } }
@@ -119,6 +149,6 @@ Model-backed Actions use the shared model-call capacity and normal attempt, time
 
 ## Preserve execution controls
 
-Validate action IDs and declared capabilities before execution. Approval and publication remain application-owned, stage-only operations. Listing their IDs in an Agent does not grant permission to invoke them.
+Validate action IDs and declared capabilities before execution. Approval and publication remain application-owned, step-only operations. Listing their IDs in an Agent does not grant permission to invoke them.
 
 Only load explicitly trusted definition roots. Importing `.mjs` executes JavaScript and its imports; schema validation and working directories are not sandboxes. Runtime work belongs in referenced Agents or Actions, not callbacks hidden in graph edges. The initial loader accepts a controlled source set as described in [Define a workflow](workflows.md).

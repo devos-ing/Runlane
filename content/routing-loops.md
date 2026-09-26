@@ -1,14 +1,16 @@
 # Route outcomes and bound repetition
 
-The runner accepts a validated result, looks up its `outcome` in the stage's `on` map, and commits the declared transition. Decision sources can change without adding another policy engine to the runner.
+The runner accepts a validated result, looks up its `outcome` in the step's `on` map, and commits the declared transition. Decision sources can change without adding another policy engine to the runner.
 
-The CLI proof validates one Agent result and commits either completion or `needs_input`. Multi-stage routes, scripts, bounded loops, and Jev remain planned. [Submit a task](cli-quickstart.md) documents the current subset; no public SDK is published.
+The CLI proof validates one Agent result and commits either completion or `needs_input`. Multi-step routes, scripts, bounded loops, and Jev remain planned. [Submit a task](cli-quickstart.md) documents the current subset; no public SDK is published.
+
+The examples use the target Step names, including `entryStep` for loop entry. The current loader still uses `stages` and `entryStage` and rejects loop definitions. The terminology change does not remove the identity needed for routing or repeated attempts.
 
 ## Keep the decision inside its source
 
 | Source | Responsibility |
 | --- | --- |
-| Existing stage output | Return the result already needed by the workflow. No extra decision call is required. |
+| Existing step output | Return the result already needed by the workflow. No extra decision call is required. |
 | ScriptAction | Use ordinary conditions or an expression library over declared inputs. Return the final outcome. |
 | Advisor Agent | Produce a result through Pi using the same input and result schemas as other sources. |
 | Jev Action, later | Normalize the provider response, apply its own confidence rules, and return the final outcome and evidence. |
@@ -19,7 +21,7 @@ Keep file access and model requests inside visible Agents or Actions. An edge mu
 
 ## Declare every destination
 
-This stage fragment assumes that the containing workflow declares `research` and `implement`. The imported result schema for `choosePath` defines the allowed outcomes once.
+This step fragment assumes that the containing workflow declares `research` and `implement`. The imported result schema for `choosePath` defines the allowed outcomes once.
 
 ```js
 {
@@ -33,7 +35,7 @@ This stage fragment assumes that the containing workflow declares `research` and
 }
 ```
 
-Definition validation checks that `on` covers every schema outcome and that every destination exists. The first format uses this one transition map; `next` shorthand is deferred. A result cannot introduce a stage, change permissions, bypass required review, or reset the loop counter.
+Definition validation checks that `on` covers every schema outcome and that every destination exists. The first format uses this one transition map; `next` shorthand is deferred. A result cannot introduce a step, change permissions, bypass required review, or reset the loop counter.
 
 Each route has exactly one destination: `to`, `repeat`, `stop`, or `complete`. `stop: "needs_input"` suspends execution and leaves the run unfinished. `complete: true` completes the workflow.
 
@@ -66,7 +68,7 @@ Invalid required fields, unsupported choices, provider errors, and timeouts are 
 4. Commit the result, route, loop counter update, pending next work, and events together.
 5. Dispatch the recorded next work.
 
-A duplicate response or stale attempt cannot create another transition or consume another repair. Attribute records to the workspace, run, and stage attempt.
+A duplicate response or stale attempt cannot create another transition or consume another repair. Attribute records to the workspace, run, and step attempt.
 
 | State at restart | Behavior |
 | --- | --- |
@@ -83,7 +85,7 @@ The [review workflow](workflows.md) declares one shared repair allowance:
 ```js
 loop: {
 	id: "repair",
-	entryStage: "implement",
+	entryStep: "implement",
 	maxReentries: 2,
 	onExhausted: "needs_input",
 }
@@ -97,7 +99,7 @@ A repair produces a new candidate and invalidates prior check and review evidenc
 
 ## Share capacity and trace
 
-Agents and model-backed Actions, including a later Jev adapter, share the default limit of two model calls across all workspaces. Waiting stages and deterministic scripts do not hold model slots. Managed model calls use the shared provider path.
+Agents and model-backed Actions, including a later Jev adapter, share the default limit of two model calls across all workspaces. Waiting steps and deterministic scripts do not hold model slots. Managed model calls use the shared provider path.
 
 The trace records source identity, input references, model when used, final result, supporting evidence, selected destination, timing, and reported usage. Missing usage stays unavailable. The graph highlights the committed route; the inspector shows the Action's evidence without re-running its logic.
 

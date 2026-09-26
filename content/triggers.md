@@ -1,6 +1,8 @@
 # Start runs with triggers
 
-A `Trigger` requests a run of its containing workflow version. Workflow definitions declare triggers separately from their stages. Manual and cron requests use the same validation, frozen snapshot, and admission path.
+A `Trigger` requests a run of its containing workflow version. Workflow definitions declare triggers separately from their steps. Manual and cron requests use the same validation, frozen snapshot, and admission path.
+
+Review is work inside that Run, performed by Reviewer Agents or checking Actions. It is not a Trigger. A repair route stays in the existing Run and uses its remaining loop allowance; a trigger requests a new Run.
 
 These plain objects are proposed definitions, not working scheduler code. Manual starts belong to the first usable milestone. Cron follows the real workflow and live graph. Importing a definition does not enable its schedule.
 
@@ -30,7 +32,7 @@ export const triggers = [
 
 Reference this list in the workflow object's `triggers` field. The first milestone's [workflow example](workflows.md) includes only a manual trigger.
 
-The cron expression uses the five-field convention. It describes 09:00 on weekdays in Hong Kong. The disabled definition does not admit scheduled runs. Enabling it must be a separate, explicit application action that validates the workflow, model profiles, inputs, and time zone first.
+The cron expression uses the five-field convention. It describes 09:00 on weekdays in Hong Kong. The disabled definition does not admit scheduled runs. Enabling it must be a separate, explicit application action that validates the workflow, profiles, inputs, and time zone first.
 
 Use stable trigger IDs and increment the trigger version when its schedule or inputs change. Preview upcoming occurrence times before enabling a cron trigger. Use a cron parser with explicit time-zone support and document its daylight-saving behavior.
 

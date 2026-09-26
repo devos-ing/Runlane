@@ -28,7 +28,7 @@ const navigation = [
   {
     id: "concepts",
     title: "Core concepts",
-    description: "Workspaces, workflows, stages, agents, actions, and runs.",
+    description: "Workflow, Agent, Action, Trigger, and Profile.",
     group: "Start here",
   },
   {

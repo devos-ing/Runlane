@@ -4,6 +4,8 @@ The execution proof runs one tool-free Agent through Pi, validates its JSON resu
 
 Tasks are workflow input. Submitting a task creates a Run directly; a plugin or a separate ticket database is not required. GitHub Issues and other task sources can become adapters later.
 
+The design now calls workflow positions Steps. The runnable CLI and `examples/task-workspace` still use `stages`, `entryStage`, and snapshot `stageId`. Keep those names when running this proof. The planned `steps`, `entryStep`, and `stepId` fields are documented in [the naming plan](decisions.md#align-step-naming-before-slice-b) and are not accepted yet.
+
 ## Start the local service
 
 Run these commands from the Runlane repository with Bun installed:
@@ -87,13 +89,13 @@ Start `serve` again with the same state directory to inspect prior runs. Queued 
 | --- | --- |
 | Foreground service and private local CLI connection | Background launch commands and desktop packaging |
 | Workspace add/list and direct JSON task submission | External issue-tracker adapters and optional backlog UI |
-| One Agent stage with no tools | Multi-stage graphs, ScriptAction, parallel reviewers, and bounded repair |
+| One Agent step with no tools, using the current `stages` field | The Step field migration, multi-step graphs, `.mjs` and `.sh` Script Actions, parallel reviewers, and bounded repair |
 | Imported object schemas and explicit `on` terminal routes | Broader result contracts and live graph projection |
-| Explicit built-in model profile and effort | Jev and additional adapter kinds |
+| Explicit built-in profile and effort | Jev and additional adapter kinds |
 | Pi durable run checkpoints and event history | Automatic recovery of additional execution kinds |
 
 The initial workflow declares `modelProfiles` as a map from profile names to `{ provider, model }`. The Agent references one profile and sets its reasoning effort. Its result schema must require an `outcome` string enum, and `on` must cover every outcome with either `{ complete: true }` or `{ stop: "needs_input" }`.
 
-The service defaults to two concurrent single-Agent runs; `serve --max-calls N` adjusts this limit. The snapshot retains resolved schemas, prompt text, inputs, source-content identity, and model settings. It does not need to re-import author code to display or settle recorded work. Unsupported tools, scripts, schedules, loops, and multi-stage definitions are rejected rather than partially executed.
+The service defaults to two concurrent single-Agent runs; `serve --max-calls N` adjusts this limit. The snapshot retains resolved schemas, prompt text, inputs, source-content identity, and model settings. It does not need to re-import author code to display or settle recorded work. Unsupported tools, scripts, schedules, loops, and multi-step definitions are rejected rather than partially executed.
 
 Use `bun run runlane --help` for the command list. Slice A does not complete the full workflow-and-live-graph milestone in [Decisions and delivery](decisions.md).

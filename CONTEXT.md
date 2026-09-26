@@ -12,27 +12,36 @@ _Avoid_: Repository or worktree as synonyms
 The background form of the local Runlane service that manages the current user's registered workspaces and executions.
 
 **Workflow**:
-A versioned process containing stages, input requirements, outcome routes, triggers, and completion policy.
+A versioned process containing steps, input requirements, outcome routes, triggers, and completion policy.
 
-**Stage**:
-A step in a workflow that assigns work to agents or direct actions and routes the result.
+**Step**:
+A locally identified execution position within a Workflow that runs Agents or Actions and routes their result.
+_Avoid_: Stage as a separate component
 
 **Agent**:
-A reusable configuration containing instructions, capabilities, a model profile, reasoning effort, and a result contract.
+A reusable configuration containing instructions, capabilities, a profile, reasoning effort, and a result contract.
 _Avoid_: Agent binding as a separate public configuration type
 
 **Agent assignment**:
-The use of an Agent in a stage, identified separately from other uses of the same Agent.
+The use of an Agent in a step, identified separately from other uses of the same Agent.
 
 **Advisor**:
 An Agent preset that produces a plan or decision for a workflow.
 _Avoid_: Route
 
-**Model profile**:
+**Profile**:
 A saved provider and model selection referenced by an Agent or a model-backed Action.
 
 **Action**:
-A capability executed directly by a stage or made available to an Agent, such as a tool, script, model decision, or application-owned operation.
+A capability executed directly by a step or made available to an Agent, such as a tool, script, model decision, or application-owned operation.
+
+**Script Action**:
+An Action implemented by a script file and an explicit interpreter.
+_Avoid_: Script as a parallel execution engine
+
+**Review**:
+Work within a Workflow that assesses an earlier result against declared criteria.
+_Avoid_: Trigger or a separate review engine
 
 **Decision**:
 A structured result used to choose a declared workflow path, with any evidence required by its result contract.
@@ -42,7 +51,7 @@ _Avoid_: A separate agent type or execution engine
 The definition of an execution result's shape and allowed outcomes, shared by its producer and consumers.
 
 **Route**:
-A rule that maps an accepted, validated stage outcome to another stage, a declared loop, completion, or stopped execution.
+A rule that maps an accepted, validated step outcome to another step, a declared loop, completion, or stopped execution.
 _Avoid_: Advisor
 
 **Loop**:

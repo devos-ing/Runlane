@@ -44,7 +44,7 @@ Workspace registration does not import or execute every file in the directory. L
 
 Every workflow registration, schedule, run, event, and artifact belongs to a workspace, directly or through its owning run. Requests and trace events carry workspace identity so clients can filter and attribute results correctly.
 
-Workflow IDs are unique within a workspace. Both `ws_app` and `ws_reports` can register a workflow named `review`. A run records its workspace ID, workflow ID, frozen source version, inputs, and resolved model profiles. Moving or renaming the workspace does not rewrite historical runs.
+Workflow IDs are unique within a workspace. Both `ws_app` and `ws_reports` can register a workflow named `review`. A run records its workspace ID, workflow ID, frozen source version, inputs, and resolved profiles. Moving or renaming the workspace does not rewrite historical runs.
 
 Agents and actions can be shared through trusted imports. Invocation context, mutable state, outputs, and evidence remain separate. Shared definitions do not grant access to another workspace's run records.
 

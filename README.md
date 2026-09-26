@@ -15,9 +15,11 @@ bun run runlane serve
 
 In another terminal, register `./examples/task-workspace`, then use the returned workspace ID to validate and submit `plan-task` with `--input examples/task-workspace/task.json`. The example requires configured Pi authentication for `openai-codex/gpt-6-luna`, runs at `low` effort, and produces a plan without editing files. See the quickstart for complete commands, logs, cancellation, and restart behavior.
 
-The agreed design uses `.mjs` workflow files to compose stages, configured agents, direct actions, and triggers. React Flow displays the validated graph and each run's trace. Execution changes happen in source files; canvas changes affect layout.
+The agreed design uses `.mjs` workflow files to compose steps, configured agents, direct actions, and triggers. React Flow displays the validated graph and each run's trace. Execution changes happen in source files; canvas changes affect layout.
 
-[Routing and loops](content/routing-loops.md) defines final outcomes and explicit destinations. The current runner accepts only completion or `needs_input` from one Agent. Multi-stage routes, scripts, bounded loops, and Jev remain planned.
+The five authoring components are Workflow, Agent, Action, Trigger, and Profile. A Step is an identified position inside a Workflow. Script is an Action implementation, with planned `.mjs` and `.sh` support; Review is work performed by Agents or Actions. The current CLI still uses `stages`, `entryStage`, and `stageId`. The design documents use their target Step names, and the migration is explicitly planned before slice B.
+
+[Routing and loops](content/routing-loops.md) defines final outcomes and explicit destinations. The current runner accepts only completion or `needs_input` from one Agent. Multi-step routes, scripts, bounded loops, and Jev remain planned.
 
 The first usable milestone combines CLI control, a real workflow with checks and parallel review, a bounded repair loop, and the existing React Flow view connected to live records. A foreground service manages workspaces and shared capacity. Background daemon launch, Jev, desktop packaging, and cron follow that milestone. Read [CLI, daemon, and workspaces](content/cli-workspaces.md) for ownership and lifecycle rules.
 
@@ -61,7 +63,7 @@ Each page provides its Markdown source, heading anchors, and adjacent-page navig
 
 The graph supports layout exploration and node inspection. Connections are read-only. Replay advances local sample data only. The node selector also exposes every execution without requiring precise canvas interaction. On narrow screens, the initial view focuses on the Review group; pan, zoom, or choose an execution to explore the rest.
 
-The canvas does not connect to the CLI service yet. Its sample events must not be read as live execution evidence. The CLI proof has real Pi and Pi durable integration, but no background launcher, desktop shell, plugins, active schedule, tools, ScriptAction, or multi-stage runner.
+The canvas does not connect to the CLI service yet. Its sample events must not be read as live execution evidence. The CLI proof has real Pi and Pi durable integration, but no background launcher, desktop shell, plugins, active schedule, tools, ScriptAction, or multi-step runner.
 
 ## Build and inspect
 
@@ -81,4 +83,4 @@ The production build checks both the documentation site and runtime TypeScript. 
 - Implemented: the foreground single-Agent CLI proof, workspace registration, JSON task submission, status/logs/cancellation, Pi durable records, and the documentation site.
 - Verification uses TypeScript, Biome, the production build, focused integration checks, and a manually submitted real planning task. No unit or end-to-end tests are included.
 - Visual evidence: desktop page inspection and narrow-viewport layout/containment inspection during the earlier local inspection.
-- Planned: multi-stage execution, parallel reviewers, bounded repair, ScriptAction, live graph connection, background launch management, desktop packaging, Jev, and scheduling. Slice A is not the full A–C milestone.
+- Planned: multi-step execution, parallel reviewers, bounded repair, ScriptAction, live graph connection, background launch management, desktop packaging, Jev, and scheduling. Slice A is not the full A–C milestone.
