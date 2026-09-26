@@ -10,7 +10,7 @@ The service owns the workspace registry, workflow loading, run admission, attemp
 
 One process owns the user's Runlane state directory. Starting the daemon when it is already running returns that service's status. A competing foreground service reports the existing owner instead of opening another writer. Different operating-system users have separate services and state.
 
-Default limits of two active runs and two simultaneous model calls apply across all workspaces. Two workspaces do not receive two model slots each. Parallel reviewers and independent runs share that capacity. The queue must give eligible work from other workspaces a chance to progress.
+Default limits of two active runs and two simultaneous model calls apply across all workspaces. Two workspaces do not receive two model slots each. Parallel reviewers, independent runs, and model-backed decision Actions share that capacity. The queue must give eligible work from other workspaces a chance to progress.
 
 An idle daemon does not invoke models. A workspace's failed run is recorded without stopping unrelated runs. A service crash can interrupt work in several workspaces, so each run needs durable recovery evidence.
 
@@ -79,7 +79,7 @@ Closing a CLI client terminal, disconnecting a log stream, or closing a desktop 
 
 A graceful service stop disables new admission and scheduling, stops dispatching new invocations, and drains invocations already executing. It persists their results and pending next work before exiting. Queued work and runs awaiting input remain recorded; they do not keep shutdown waiting indefinitely. Stopping the service affects all workspaces.
 
-On restart, reconcile interrupted attempts before dispatching pending work. An external action with an unknown outcome cannot be repeated merely because the process restarted. Preserve loop counters, selected models and effort, source versions, and event identities.
+On restart, reconcile interrupted attempts before dispatching pending work. An external action with an unknown outcome cannot be repeated merely because the process restarted. Preserve loop counters, selected models and effort, source versions, decision policies, and event identities. Reuse committed decision results and routes; do not ask Jev or an Advisor to choose again just because a client reconnected or the service restarted.
 
 Cron runs only while the service is running. The initial design skips missed offline occurrences and does not wake a sleeping computer. Background startup is manual initially. Login startup and operating-system service installation are later work.
 

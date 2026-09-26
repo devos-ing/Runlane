@@ -52,7 +52,7 @@ const navigation = [
   {
     id: "routing-loops",
     title: "Routing & loops",
-    description: "Typed outcomes and bounded repetition.",
+    description: "Replaceable decisions, explicit routes, and bounded loops.",
     group: "System design",
   },
   {

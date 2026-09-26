@@ -29,13 +29,20 @@ An Agent preset that produces a plan or decision for a workflow.
 _Avoid_: Route
 
 **Model profile**:
-A saved provider and model selection referenced by an Agent.
+A saved provider and model selection referenced by an Agent or a model-backed Action.
 
 **Action**:
-A capability executed directly by a stage or made available to an Agent, such as a tool, script, or application-owned operation.
+A capability executed directly by a stage or made available to an Agent, such as a tool, script, model decision, or application-owned operation.
+
+**Decision**:
+A structured result used to choose a declared workflow path, with any evidence required by its result contract.
+_Avoid_: A separate agent type or execution engine
+
+**Decision policy**:
+A declared rule that accepts a proposed decision or maps it to another allowed outcome, such as a request for input.
 
 **Route**:
-A rule that maps a validated stage outcome to another stage, a declared loop, completion, or stopped execution.
+A rule that maps an accepted, validated stage outcome to another stage, a declared loop, completion, or stopped execution.
 _Avoid_: Advisor
 
 **Loop**:

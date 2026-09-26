@@ -15,6 +15,7 @@ An automation platform for developers to manage agents, compose workflows, and i
 | Workspaces | Register source roots and keep workflow definitions and execution records attributable. |
 | Workflows | Author stages, agents, scripts, routes, and triggers in `.mjs` files. |
 | Agents | Reuse configurations containing instructions, capabilities, result contracts, and selected models. |
+| Decisions | Use rules, scripts, Advisors, or Jev-backed Actions to choose among declared routes. |
 | Runs | Start work and see which stages are queued, running, complete, or blocked. |
 | Trace | Inspect inputs, outputs, action calls, timing, usage, and routing decisions. |
 | Triggers | Start manually, then add calendar schedules through the same runner. |
@@ -42,6 +43,8 @@ Trigger + inputs → Run of that version → Stages
 The workflow file is the authoring source. React Flow displays the validated graph, run status, and trace. Its first version supports inspection and layout changes. Execution changes happen in code.
 
 Each run belongs to a registered workspace. One service manages all workspaces and their shared capacity. Keep definitions separate from their executions. Reuse one agent executor and a small set of action handlers. The proposed constructors create definitions only; the runner starts work after validation and admission.
+
+Decision sources are replaceable. The runner validates their results, applies declared policies, and persists the selected route before advancing. Model-backed decisions share the global model-call capacity. [Routing and loops](routing-loops.md) explains the contract and recovery behavior.
 
 ## Read with your teammate
 

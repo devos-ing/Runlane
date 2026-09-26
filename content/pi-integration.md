@@ -22,9 +22,17 @@ Pi remains authoritative for its conversation history. Avoid creating a second t
 
 Reuse approved Pi tools and its extension interface for application-owned structured submission. Contributor definitions select allowed capabilities and result contracts. Load only explicitly trusted resources for managed invocations. [Tool selection](https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/examples/sdk/05-tools.ts), [Extensions](https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/examples/sdk/06-extensions.ts)
 
-Direct scripts remain model-free actions. Workflow routing, schedules, concurrency limits, and the run graph belong to the application.
+Deterministic checks and scripts do not need a model invocation. Workflow routing, schedules, concurrency limits, and the run graph belong to the application.
 
 Runlane also owns the `.mjs` definition loader and retention of each run's source version. Pi conversation persistence does not preserve arbitrary workflow modules, checking scripts, or their dependencies for us.
+
+## Add decision models through an Action adapter
+
+Jev is a planned decision source alongside scripts and Advisor Agents. Its Action adapter uses the provider's decision interface and normalizes the response into Runlane's result contract. Do not assume that a decision-model endpoint accepts Pi's conversational or tool-loop protocol.
+
+Keep ordinary Agent execution in Pi. The Jev path shares attempt records, the global model-call limit, timeout and cancellation handling, reported usage, and durable decision evidence. It does not create a second agent runtime. Model profiles select an explicit provider and version, and the adapter validates the capabilities it requires.
+
+Runlane validates the normalized result, applies any frozen decision policy, and commits its selected route. A policy may convert valid uncertainty into a declared outcome. Provider failures remain failures. The [routing design](routing-loops.md) defines those rules. Jev integration has not been implemented or verified in this repository.
 
 ## Prove the integration first
 

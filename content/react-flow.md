@@ -39,6 +39,14 @@ Store layout separately by workspace, workflow version, and stable node ID. Movi
 
 For an active run, display its frozen graph and source version. A changed workflow file updates the definition preview and future runs without changing an existing run's graph.
 
+## Show replaceable decision sources
+
+A decision stage uses the same graph structure whether it runs a script, Advisor, or Jev Action. Its `on` map declares candidate edges before execution. The model cannot add a node or return an undeclared destination.
+
+The inspector shows the decision source, input references, proposed choice, any reported confidence, applied policy, and accepted outcome. Highlight the committed route. A low-confidence proposal can select `needs_input`; a provider failure leaves the attempt failed or blocked without inventing a selected edge.
+
+Replay reads recorded decisions. It does not call a model again or run the current policy against an old result. These are planned live-client behaviors; the current preview still uses its existing sample traces.
+
 ## Project run events onto the graph
 
 ```text

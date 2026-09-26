@@ -14,12 +14,15 @@ Use [Development scope](development-scope.md) to bound a work item by its goal, 
 - Author workflows in `.mjs`, with optional `.ts` support. Import reusable agents, scripts, and trigger definitions from trusted sources.
 - Combine instructions, capabilities, model profile, effort, and result contract in Agent. Stage assignment identifies where an Agent is used; it does not require a separate public Agent binding type.
 - Share an internal `Executable` parent contract between Agent and Action. Advisor, Implementer, and Reviewer remain Agent presets.
-- Keep outcome routing deterministic. An Advisor supplies a result; the runner validates and routes it.
+- Allow rules, scripts, Advisors, and Jev-backed Actions to supply decisions. Keep result validation, decision policies, and transitions shared in the runner.
+- Declare every route destination in advance. A decision is an execution result, not another parent class or agent engine.
+- Commit accepted decisions and selected routes before advancing. Recovery reuses committed decisions rather than calling a model to select again.
 - Add the live graph through a graphical client after the CLI and daemon foundation. Reuse the same execution records and events.
 - Use React Flow for viewing execution, inspecting trace, and arranging layout. Edit execution logic in source files.
 - Reuse Pi for agent execution and adopt Pi durable for the persistence foundation.
 - Let contributors add agents, prompts, and scripts through validated definitions.
 - Keep explicit model profiles, bounded loops, and defaults of two active runs and two simultaneous model calls across all workspaces.
+- Include model-backed decision Actions in that shared capacity. Distinguish valid uncertainty from provider failures and malformed results.
 - Retain each run's definition, source files, and dependency version references. Edits apply to new runs, and recovery uses the recorded version.
 - Support independent runs and parallel read-only reviewers. Every designated reviewer must approve in the coding-review template.
 - Keep session management inside the Pi integration. Treat Tickets, worktrees, and PRs as coding-template capabilities.
@@ -41,13 +44,16 @@ The detailed contract and proposed commands are in [CLI, daemon, and workspaces]
 | Documentation | Markdown site, shared vocabulary, interactive React Flow demonstration. | This preview |
 | CLI runner proof | Register one workspace, load and retain one trusted `.mjs` workflow, and invoke one real agent through a foreground service with durable status and trace. | Planned |
 | Daemon and workspaces | Background lifecycle, multiple registered roots, scoped records, one state owner, and recovery after service interruption. | Planned |
-| Execution controls | Direct scripts, typed routing, bounded repetition, cancellation, parallel work, global limits. | Planned |
+| Execution controls | Direct scripts, common decision results, explicit routing, bounded repetition, cancellation, parallel work, and global limits. | Planned |
+| Decision-model adapter | Jev-backed Action using the shared contracts, explicit model configuration, confidence policy, trace, and recovery path. | Planned |
 | Contributor authoring | Reusable Agent and Action examples, validation diagnostics, and source reload for future runs. | Planned |
 | Graphical client | Desktop shell around the shared React UI, workspace navigation, live graph, layout persistence, and selected-node trace from the service. | Planned |
 | Schedules | Manual and cron triggers, occurrence identity, overlap policy, visible history. | Planned |
 | Coding template | Optional worktree, candidate checks, independent review, human-approved draft PR. | Planned |
 
 The runtime and persistence proof includes package/version selection and lifecycle verification. A model invocation or persisted record must not be reported as successful from a simulated trace.
+
+Build the common decision contract and ScriptAction decision path before the Jev adapter. The adapter must normalize provider results and use the existing capacity and attempt lifecycle. It does not add another scheduler or agent loop. [Routing and loops](routing-loops.md) owns this design.
 
 The `@runlane/sdk` imports and constructors in these pages are proposed interfaces. The package and loader are not implemented. SDK constructors create definitions only. Importing author JavaScript can still execute arbitrary code, so the loader accepts explicitly trusted sources.
 
@@ -59,7 +65,7 @@ The first runtime slice registers one workspace and accepts a CLI-submitted work
 
 CLI status and trace show admission, execution, validated output, actual model, and effort from persisted records. A failed definition load or unavailable model appears as a blocker before execution. Cancellation and service interruption preserve attributable evidence. Disconnecting a client does not launch, cancel, or duplicate work.
 
-This slice proves workspace identity, the loader, Pi adapter, Pi durable mapping, and the client event path together. Later slices add daemon lifecycle, multiple workspaces, scripts, parallel stages, bounded loops, the graphical client, and schedules to that same path. The existing graph remains a simulated preview until connected to real events.
+This slice proves workspace identity, the loader, Pi adapter, Pi durable mapping, and the client event path together. Later slices add daemon lifecycle, multiple workspaces, scripts, replaceable decision sources, parallel stages, bounded loops, the graphical client, and schedules to that same path. The existing graph remains a simulated preview until connected to real events.
 
 ## Discuss before implementation
 
@@ -69,6 +75,7 @@ This slice proves workspace identity, the loader, Pi adapter, Pi durable mapping
 4. Which Agent and Action result contracts need to ship before custom result schemas?
 5. What is the smallest retained source format that preserves imported modules, prompts, scripts, and pinned dependencies across restart?
 6. Which local client transport supports the CLI and graphical client while preserving one authenticated state owner?
+7. Which Jev provider and pinned version satisfy the required choice contract, and how should the first workflow set its uncertainty policy?
 
 These questions do not justify building a plugin framework or a second agent runtime. Resolve them with bounded integration evidence and a concrete workflow.
 

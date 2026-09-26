@@ -1,12 +1,12 @@
 # Define a workflow
 
-Runlane workflows are declarative graphs of stages. A stage runs an `Agent` or an `Action`. `next` names the stage for a validated success outcome. The `on` map routes other named outcomes from the result contract.
+Runlane workflows are declarative graphs of stages. A stage runs an `Agent` or an `Action`. `next` names the stage for a validated success outcome. The `on` map routes named outcomes from the result contract. A decision source can use rules, a script, an Advisor, or Jev while the destination map stays explicit.
 
 The examples use the proposed `@runlane/sdk` API. The package and runner are not implemented. SDK constructors and trigger factories return configuration values. They do not start runs, invoke agents, execute scripts, or create schedules. Loading a `.mjs` module executes its JavaScript and imports.
 
 ## Author definitions in JavaScript
 
-Use `.mjs` files as the reference format. A project may author `.ts` files when its chosen loader supports them. Constructors create definitions from data; keep callbacks and closures out of those definitions.
+Use `.mjs` files as the reference format. A project may author `.ts` files when its chosen loader supports them. Constructors create definitions from data; keep callbacks and closures out of those definitions. Put custom runtime logic in referenced Actions or Agents so it has an attributable attempt and trace.
 
 ```text
 runlane/
@@ -114,13 +114,19 @@ Each invocation receives frozen workflow inputs and the relevant validated prior
 
 Both trigger definitions belong to this workflow. The cron definition is disabled. The trigger service registers it only through an explicit application action after validation. See [Triggers and schedules](triggers.md) for occurrence handling.
 
+## Replace decision logic without replacing the graph
+
+A decision stage runs a configured Agent or Action and maps its accepted outcomes through `on`. The source may change from a script to an Advisor or Jev adapter if its contracts remain compatible. Declare every possible destination and any decision policy before the run starts.
+
+Policy-adjusted outcomes, including `needs_input`, must belong to the result contract. API errors and malformed results remain execution failures. They cannot count as an ordinary decision or bypass the review aggregation in the coding template. See [Routing and loops](routing-loops.md) for the decision result and recovery contract.
+
 ## Freeze executable inputs for restart
 
-At admission, resolve the workspace, workflow, trigger, inputs, agents, model profiles, action definitions, and policies into a run snapshot. Record workspace identity and the execution directory separately from the source root. The snapshot must identify the exact prompt and script contents and the dependency versions needed to resume the run. Record content hashes and retain an immutable source bundle or source revision, including the package lockfile. JSON configuration alone cannot restore executable files.
+At admission, resolve the workspace, workflow, trigger, inputs, agents, model profiles, action definitions, and policies into a run snapshot. Include decision-source identity, allowed choices, adapter version, and any confidence policy. Record workspace identity and the execution directory separately from the source root. The snapshot must identify the exact prompt and script contents and the dependency versions needed to resume the run. Record content hashes and retain an immutable source bundle or source revision, including the package lockfile. JSON configuration alone cannot restore executable files.
 
 Store definition data, file references, and version identifiers. Do not serialize JavaScript closures. A restart uses the recorded snapshot and must stop with a visible blocker if required source or dependency versions are unavailable. Source edits apply to future runs.
 
-The runtime defaults to two active runs and two concurrent model calls across all registered workspaces. Configure those service-wide limits explicitly. Eligible work waits in a visible queued state when either limit is full.
+The runtime defaults to two active runs and two concurrent model calls across all registered workspaces. Agents and model-backed decision Actions share these limits. Configure those service-wide limits explicitly. Eligible work waits in a visible queued state when either limit is full.
 
 ## Keep product concepts separate
 

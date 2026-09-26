@@ -31,6 +31,7 @@ Contributors reuse Agent configurations and Action implementations. Keep the sha
 | Workspaces | Stable registration, source roots, and ownership of workflows and execution records. | A workspace need not be a Git repository and is not a process sandbox. Shared definitions do not share run state. |
 | Workflow authoring | Stages, configured agents, scripts, triggers, and typed routes. | `.mjs` remains authoritative. Canvas layout changes do not rewrite execution logic. |
 | Orchestration | Admission, attempts, result validation, routing, cancellation, and recovery. | Reuse Pi's agent loop and conversation internals. Keep session management below the product. |
+| Decisions | Replaceable rule, script, Advisor, and Jev sources with a shared accepted-outcome contract. | Keep destinations explicit, model calls within shared capacity, and decision evidence durable. A new source does not create another execution engine. |
 | Observability | Run history, graph state, trace events, and evidence references. | Show observable execution. Simulated events never prove a live integration. |
 | Persistence | Run identity, ordering, loop counters, and atomic transitions. | Use Pi durable where verified. Avoid a second authoritative conversation store. |
 | Extensions | Agent definitions, prompts, scripts, and declared capabilities. | Load explicitly trusted sources. Validation and working directories are not sandboxes. |
@@ -66,7 +67,7 @@ Planning, implementation, and review use this same record. Planning identifies t
 | How | Run the service in the foreground, resolve a registered workspace, validate and retain its workflow source, invoke Pi, and expose recorded events to the CLI. |
 | In scope | Minimal workspace registration, the loader, one invocation path, required durable records, CLI status, and trace output. |
 | Boundaries | Explicit model and effort, validated input and output, workspace attribution, one state owner, retained source, and visible cancellation or interruption. |
-| Out of scope | Background process management, parallel stages, repair loops, cron, desktop packaging, live graph integration, PR publication, and a general plugin system. |
+| Out of scope | Background process management, Jev integration, parallel stages, repair loops, cron, desktop packaging, live graph integration, PR publication, and a general plugin system. |
 | Evidence | Typecheck, lint, build, and a focused permitted integration check covering the real invocation and the relevant interruption or failure path. |
 | Done | A real result appears in the workspace's recorded run and trace. Invalid input or an unavailable model cannot appear as success. Client reconnection preserves run identity. Service interruption does not silently duplicate work. |
 | Stop or revisit | Pi durable cannot meet the required atomic transition, the selected Pi version fails the required lifecycle, or source retention requires capabilities outside this slice. Record the evidence and resolve the affected design choice. |

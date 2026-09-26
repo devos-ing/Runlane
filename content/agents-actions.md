@@ -61,7 +61,7 @@ export const maintainability = new Agent({
 
 ## Describe an action
 
-An action can be a trusted built-in capability, a script, or an application-owned operation. Agent `actions` lists the IDs that the agent may call. Workflow stages can run an action directly through the same `run` field used for agents.
+An action can be a trusted built-in capability, a script, a model decision request, or an application-owned operation. Agent `actions` lists the IDs that the agent may call. Workflow stages can run an action directly through the same `run` field used for agents.
 
 ```js
 // actions/check-dependencies.mjs
@@ -105,6 +105,36 @@ The script writes exactly one bounded JSON object to stdout. The object must mat
 The runner validates the result before routing. It bounds stdout and stderr by configured byte limits. Malformed JSON, a contract mismatch, a nonzero exit, or a timeout is an execution failure, separate from a valid `outcome: "fail"`. None of those failures is a passing result. The runner records bounded output, exit status, and timing according to the configured retention policy.
 
 A completed check returns `pass`, `fail`, or `unknown` with exit code zero. A nonzero exit or launch failure blocks execution rather than selecting a repair route.
+
+## Produce a routing decision
+
+A decision source uses the same Agent or Action contract as other work. The first custom decision path can use ScriptAction:
+
+```js
+// actions/choose-path.mjs
+import { ScriptAction } from "@runlane/sdk";
+
+export const choosePath = new ScriptAction({
+	id: "choose-path",
+	executable: "bun",
+	scriptFile: new URL("../scripts/choose-path.mjs", import.meta.url),
+	args: [],
+	timeoutMs: 10_000,
+	input: { contract: "route-context-v1" },
+	result: {
+		contract: "route-decision-v1",
+		outcomes: ["research", "implement", "needs_input"],
+	},
+});
+```
+
+The proposed script receives the declared context and emits one accepted outcome with contract-defined data. It can use ordinary conditions or an expression library without adding a new workflow execution path. It cannot return an arbitrary stage ID outside the contract. The containing workflow maps outcomes to destinations as shown in [Routing and loops](routing-loops.md).
+
+An Advisor Agent or a Jev Action can replace this source when it satisfies the same input and result contracts and any configured decision policy. Decision is a role of the result, not another executor hierarchy.
+
+The planned Jev adapter uses an explicit provider and model profile, declared choices, and retained instructions. It normalizes the provider response before the shared result path applies the workflow's frozen decision policy. No public Jev constructor or dependency has been implemented or selected in this repository.
+
+Model-backed Actions use the shared capacity gate and record timing, reported usage, timeout, and cancellation. A local deterministic script does not need a model slot. Managed model calls must use the provider adapter; arbitrary HTTP calls inside a contributed script are not automatically visible to the scheduler. The initial Jev integration is a direct stage Action.
 
 ## Treat definition code as trusted code
 
