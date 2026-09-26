@@ -2,7 +2,7 @@
 
 The runner accepts a validated result, looks up its `outcome` in the stage's `on` map, and commits the declared transition. Decision sources can change without adding another policy engine to the runner.
 
-These definitions describe the proposed design. No runtime, public SDK, or Jev adapter is implemented in this repository.
+The CLI proof validates one Agent result and commits either completion or `needs_input`. Multi-stage routes, scripts, bounded loops, and Jev remain planned. [Submit a task](cli-quickstart.md) documents the current subset; no public SDK is published.
 
 ## Keep the decision inside its source
 

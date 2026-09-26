@@ -2,7 +2,7 @@
 
 Runlane starts with a CLI and one local runner service for the current operating-system user. That service manages every registered workspace. Foreground execution and a background daemon use the same runner, persistence, and scheduling logic.
 
-This page records the agreed design. The commands, Workspace type, daemon, and client interface are proposals. The repository currently implements the documentation site and simulated graph only.
+This page records the target design. The foreground CLI proof implements workspace registration, one tool-free Agent invocation, durable status and logs, and cancellation. Background daemon commands and the broader workflow lifecycle remain planned. Use [Submit a task](cli-quickstart.md) for commands that run today.
 
 The first usable milestone uses the foreground service, supports the required workflow and parallelism, and connects the existing graph to real records. Background daemon commands, desktop packaging, Jev, and cron follow that milestone. Workspace identity and one state owner are retained from the start.
 
@@ -52,7 +52,7 @@ A missing root blocks work that requires its files, without removing history or 
 
 ## Proposed CLI commands
 
-These commands describe intended behavior. They are not installed by this documentation site. Examples assume that registration returned `ws_app` and its workflow catalog contains `review`.
+The table describes the target command surface. For implemented commands, use the repository entry point `bun run runlane ...`; no global binary is installed. The `daemon` commands are future work. Examples assume registration returned `ws_app` and `workflows/review.mjs` exists.
 
 | Command | Behavior |
 | --- | --- |
@@ -82,6 +82,8 @@ Closing a CLI client terminal, disconnecting a log stream, or closing a desktop 
 A graceful service stop disables new admission and scheduling, stops dispatching new invocations, and drains invocations already executing. It persists their results and pending next work before exiting. Queued work and runs awaiting input remain recorded; they do not keep shutdown waiting indefinitely. Stopping the service affects all workspaces.
 
 On restart, reconcile interrupted attempts before dispatching pending work. An external action with an unknown outcome cannot be repeated merely because the process restarted. Preserve counters, selected models and effort, source versions, Action settings, and event identities. Reuse committed final results and routes. Retain a controlled source set and verify the dependency environment; missing or unsupported recovery inputs block the run.
+
+The current proof implements a narrower stop/recovery path: a foreground service signal aborts active invocations and records interruption. Startup marks unfinished records interrupted without replay. The drain-and-stop daemon behavior above remains planned.
 
 Cron runs only while the service is running. The initial design skips missed offline occurrences and does not wake a sleeping computer. Background startup is manual initially. Login startup and operating-system service installation are later work.
 

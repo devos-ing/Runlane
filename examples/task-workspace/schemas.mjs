@@ -1,4 +1,5 @@
 export const input = {
+  $id: "urn:runlane:task-input:v1",
   type: "object",
   required: ["task"],
   additionalProperties: false,
@@ -13,6 +14,7 @@ export const input = {
 };
 
 export const result = {
+  $id: "urn:runlane:plan-result:v1",
   type: "object",
   required: ["outcome", "data"],
   additionalProperties: false,

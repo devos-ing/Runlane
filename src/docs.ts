@@ -32,6 +32,12 @@ const navigation = [
     group: "Start here",
   },
   {
+    id: "cli-quickstart",
+    title: "Submit a task",
+    description: "Run the CLI proof with real Pi execution and durable trace.",
+    group: "Start here",
+  },
+  {
     id: "cli-workspaces",
     title: "CLI, daemon & workspaces",
     description: "One local service, workspace identity, and client lifecycle.",

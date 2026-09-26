@@ -4,9 +4,11 @@ Define the work. Connect your agents. See every step.
 
 An automation platform for developers to manage agents, compose workflows, and inspect each run. GitHub Actions is the reference for the execution graph and trace.
 
-> Interactive design preview. Graph events are simulated. The CLI, daemon, workspace registry, Pi integrations, and schedules are not implemented.
+> The CLI execution proof is available. This graph still uses simulated events. Multi-stage execution, background daemon commands, desktop packaging, and schedules remain planned.
 
 <!-- playground -->
+
+Use [Submit a task](cli-quickstart.md) to register a workspace, send a JSON task to a real Pi Agent, and inspect its persisted result. The example produces a plan without editing files.
 
 ## The product in one minute
 

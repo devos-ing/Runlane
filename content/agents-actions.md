@@ -2,7 +2,7 @@
 
 An Agent is reusable configuration for a Pi invocation. A ScriptAction describes a process to run. Workflow stages refer to either through `run`. Definitions are plain objects; runtime adapters share an execution interface without a required base class.
 
-These examples describe proposed configuration. The loader, schemas, and runtime are not implemented. Public SDK packaging and constructor helpers can wait until they remove demonstrated duplication.
+The CLI proof loads one Agent with imported JSON schemas and no tools. The reusable and multi-stage examples below describe the broader design; ScriptAction is not implemented yet. [Submit a task](cli-quickstart.md) documents the runnable subset. Public SDK packaging and constructor helpers remain deferred.
 
 ## Define an agent as data
 
@@ -47,7 +47,7 @@ export const reviewResult = {
 };
 ```
 
-Schema-validator selection is implementation work. The other schema imports in these examples follow this same pattern; they are not references to an implemented global schema registry.
+The CLI proof uses Ajv with isolated compilation, so repeated loads of a schema with the same `$id` do not collide. The other schema imports in these examples follow this pattern; no global schema registry is required.
 
 Parallel reviewers share settings and a result schema while selecting different models:
 

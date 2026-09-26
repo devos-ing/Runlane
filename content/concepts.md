@@ -36,7 +36,7 @@ The loader validates definitions, and adapters perform work. Contributors import
 | Execution adapters | Execute Pi Agents and scripts first, then additional concrete Action kinds when needed. |
 | Run store | Persist workspace registration, attempts, results, events, source references, and atomic transitions using the selected Pi durable foundation. |
 
-These are responsibilities, not four required packages. Workspace, Route, Loop, and Model profile can remain data. The CLI and graph read the same operations and records. Add background launch management, cron, and desktop packaging around that core later. The current repository implements the documentation site and simulated graph only.
+These are responsibilities, not four required packages. Workspace, Route, Loop, and Model profile can remain data. The CLI proof now loads a single-Agent definition, executes through Pi, and stores records in Pi durable. The graph remains simulated. Background launch management, multi-stage execution, cron, and desktop packaging follow later.
 
 ## Definitions are not runs
 

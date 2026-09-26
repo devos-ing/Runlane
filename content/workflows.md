@@ -2,7 +2,7 @@
 
 A workflow is a plain object exported from a trusted `.mjs` module. It declares stages and maps result outcomes to destinations through `on`. Agents and Actions are reusable configuration values referenced by those stages.
 
-These are proposed definitions, not an implemented SDK. The first authoring format does not require constructors, inheritance, or a global contract registry. Optional `.ts` authoring depends on the chosen loader.
+The plain-object format is supported by the single-Agent CLI proof. The multi-stage example below remains a design proposal; use [Submit a task](cli-quickstart.md) for the runnable subset. There is no public SDK, constructor hierarchy, or global contract registry. The current loader accepts `.mjs` only.
 
 ## A bounded review workflow
 

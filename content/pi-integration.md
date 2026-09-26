@@ -1,6 +1,14 @@
 # Reuse Pi and Pi durable
 
-Pi is the selected agent execution engine. Pi durable is the selected persistence foundation. Their concrete compatibility and data mapping remain integration work.
+The CLI proof pins Pi coding-agent and Pi durable at 0.87.1. Pi executes one tool-free Agent, and Pi durable stores workspace and run checkpoint documents through a small Bun SQLite facade. The broader multi-stage mapping remains future work.
+
+## Verified slice-A mapping
+
+Each Runlane workspace and run is a Pi durable session-scoped document. A run checkpoint contains its immutable input and resolved definition, current status, final result, and attributable event history. Replacing that checkpoint commits the transition and events together. No second model transcript is created; Pi's SessionManager owns the conversation file.
+
+Bun's missing-row result is normalized to the `undefined` required by Pi durable's facade. The database uses WAL and `synchronous=FULL`. A separate SQLite exclusive transaction holds service ownership for the process lifetime; it has no expiring lease. File permissions and the local bearer token protect the service connection.
+
+The proof has executed `openai-codex/gpt-6-luna` with `low` effort, using configured Pi authentication and no tools or discovered workspace resources. [Submit a task](cli-quickstart.md) explains how to run the example. These results do not verify ScriptAction, multi-stage recovery, or cron.
 
 ## The agent execution boundary
 
@@ -10,7 +18,7 @@ Use Pi's model runtime for provider/model lookup and supported authentication. T
 
 ## Persistence with Pi durable
 
-Pi durable exposes durable record contracts and storage implementations for conversation, task, and document data. Its portable SQLite core can support synchronous database adapters; compatibility with our Bun deployment needs verification. [Pi durable](https://raw.githubusercontent.com/earendil-works/pi/main/packages/durable/README.md)
+Pi durable exposes record contracts and storage implementations for conversation, task, and document data. The current proof uses its portable SQLite core with Bun's synchronous database API. [Pi durable](https://raw.githubusercontent.com/earendil-works/pi/main/packages/durable/README.md)
 
 We still define run identity, attempt state, event ordering, loop counters, approval evidence, and which updates must commit together. A package with durable storage does not automatically implement those business rules.
 
@@ -40,4 +48,4 @@ Pin a published package version and inspect its declarations. Verify explicit mo
 
 Keep this proof bounded to one invocation and the records needed to preserve its result and transition. Retain a known source set and verify the existing dependency environment. Do not expand a compatibility problem into another persistence abstraction, a general bundler, or automatic environment reconstruction without concrete need.
 
-An earlier Pied Piper integration recorded a Bun/macOS shutdown issue with Pi 0.82.1's SDK entry point. Treat that as a version-specific investigation lead, not a claim that the current SDK is incompatible. No live Pi or Pi durable integration has been executed by this documentation project.
+An earlier Pied Piper integration recorded a Bun/macOS shutdown issue with Pi 0.82.1's SDK entry point. The current 0.87.1 proof has loaded and executed successfully on this Bun environment. Keep the versions pinned and recheck the bounded lifecycle when upgrading.

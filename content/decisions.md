@@ -44,7 +44,7 @@ The detailed contract and proposed commands are in [CLI, daemon, and workspaces]
 | Slice | Outcome | Status |
 | --- | --- | --- |
 | Documentation | Markdown site, shared vocabulary, interactive React Flow demonstration. | This preview |
-| A. Execution proof | One workspace, a foreground service, one real Pi invocation, result validation, durable attempts and events, and CLI status and cancellation. Verify Pi durable mapping before expanding it. | Next |
+| A. Execution proof | Workspace registration, foreground service, one tool-free Pi Agent, JSON input/result validation, Pi durable records, CLI status, logs, and cancellation. | Implemented subset; see quickstart |
 | B. Real workflow | A bounded Plan → Implement → Checks → parallel Review example with a shared two-repair loop. Exercise independent runs across two workspaces under shared capacity. | Planned |
 | C. Live observation | Connect the existing React Flow view and inspector to those real records. Show active work, results, failures, and the chosen repair route. | Planned |
 | Daemon operation | Manual background start, status, graceful stop, and reconciliation using the same runner and records. | After A–C |
@@ -53,13 +53,13 @@ The detailed contract and proposed commands are in [CLI, daemon, and workspaces]
 | Schedules | Cron admission, occurrence identity, overlap policy, and visible history. | After A–C |
 | Coding template | General repository and worktree provisioning, plus human-approved draft PR publication. Reuse the demonstrated checks and review loop. | Later |
 
-The runtime and persistence proof includes package/version selection and lifecycle verification. A model invocation or persisted record must not be reported as successful from a simulated trace.
+The CLI proof pins Pi coding-agent and Pi durable at 0.87.1. A real `openai-codex/gpt-6-luna` invocation with `low` effort produced a validated result. Pi durable document writes and reopen work through the Bun SQLite adapter. [Submit a task](cli-quickstart.md) describes the implemented boundary. The canvas remains simulated.
 
 A–C form the first usable milestone. A alone is an integration proof, not delivery of the workflow product. Preserve both requested forms of parallelism, every designated reviewer's approval, and configurable defaults of two active runs and two model calls across workspaces.
 
 Use an isolated example directory for the code-change workflow. Parallel reviewers inspect the same immutable candidate, and independent writing runs use different workspaces. General repository provisioning and PR publication stay in the later coding template.
 
-The definition objects and schema references in these pages are proposals. The loader and runtime are not implemented. Public SDK packaging is deferred. Importing author JavaScript can still execute arbitrary code, so the loader accepts explicitly trusted sources.
+The CLI proof loads the single-Agent subset of the plain-object definition format. Multi-stage definitions, scripts, loops, and schedules remain proposals and are rejected by that loader. Public SDK packaging is deferred. Importing author JavaScript executes code, so workspace sources must be trusted.
 
 Visual editing of execution logic is deferred. Supporting arbitrary `.mjs` round-tripping would require a separate restricted authoring format or source transformation design.
 
@@ -79,14 +79,14 @@ Keep four core responsibilities: load and validate definitions, run the workflow
 
 Retain schema validation, explicit model selection, source identity, cancellation, global capacity, and atomic transitions. Defer a universal policy engine, an inheritance framework, an expression engine, and automatic dependency or environment reconstruction. Extract another shared module only when real implementations repeat the same behavior.
 
-## Discuss before implementation
+## Resolve before the next slice
 
-1. Which Pi durable public records map cleanly to a run, attempt, event, and artifact?
-2. Can those records satisfy our atomic transition and occurrence-deduplication requirements on Bun?
-3. Which one-agent manual workflow should be the first reusable example?
-4. Which Agent and Action result contracts need to ship before custom result schemas?
-5. Which controlled source set and existing dependency environment can the first workflow retain and verify without a general-purpose bundler?
-6. Which local client transport supports the CLI and graphical client while preserving one authenticated state owner?
+1. How should the current run checkpoint represent multiple stage attempts while keeping transitions and their events atomic?
+2. Which result schemas do implementation, checks, and review require beyond the demonstrated planning result?
+3. Which controlled script and candidate source set can slice B retain and verify without a general-purpose bundler?
+4. How should the graphical client authenticate to the existing loopback interface with an explicit allowed origin?
+
+Slice A resolved the initial model invocation, workspace/run document mapping, SQLite ownership, and CLI transport questions. The planning example in `examples/task-workspace` is the current runnable reference. Later cron work still needs occurrence-deduplication evidence.
 
 Jev provider selection, its confidence settings, and desktop packaging are later decisions. They do not block the execution proof or live graph.
 
@@ -96,7 +96,7 @@ These questions do not justify building a plugin framework or a second agent run
 
 AI contributors must not write, run, or delegate unit or end-to-end tests. Use typechecking, lint, build, and the smallest permitted integration check for load-bearing runtime behavior. Browser screenshots can support visual inspection; they do not prove live agent execution.
 
-The current website is a static documentation application with a deterministic client-side demonstration. It has no backend runner, credentials, model calls, active cron jobs, or Pi durable database.
+The website's canvas is a deterministic client-side demonstration. The separate CLI proof has a foreground backend, real Pi execution, and Pi durable storage. It has no active cron jobs, background daemon launcher, ScriptAction executor, multi-stage runner, or live graph connection.
 
 ## Maintain this site
 

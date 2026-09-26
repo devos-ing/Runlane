@@ -18,7 +18,7 @@ Development needs the same discipline. Adding a new agent should not produce ano
 
 ## How
 
-The agreed design uses trusted `.mjs` definitions, a validated graph, and a retained source version for each run. One service for the current operating-system user manages registered workspaces. Its runner owns execution state, outcome routing, shared capacity, and bounded repetition. Pi executes agents. Pi durable is the selected persistence foundation, pending compatibility and transaction evidence.
+The agreed design uses trusted `.mjs` definitions, a validated graph, and a retained source version for each run. One service for the current operating-system user manages registered workspaces. Its runner owns execution state, outcome routing, shared capacity, and bounded repetition. The CLI proof now executes one Agent through Pi and commits run checkpoints through Pi durable on Bun SQLite; broader workflow behavior remains planned.
 
 Delivery starts with a CLI and foreground service. Prove one invocation, then add the real review loop and connect the existing React Flow view to its records. The first usable milestone includes independent runs across workspaces and parallel reviewers under shared limits. Background launch management, Jev, desktop packaging, and cron follow it. A separate web product and a TUI remain later options. See [Decisions and delivery](decisions.md).
 
@@ -76,7 +76,7 @@ Slice A is the next integration proof, not completion of the product milestone. 
 
 Use the existing graph for that evidence before adding Jev or desktop packaging. Source retention starts with a controlled set of known files and a verified dependency environment. Unsupported or missing inputs block the run. These boundaries keep the milestone small without dropping validation, recovery, or the user's required parallel behavior.
 
-This plan is not an instruction to implement the runtime during every task. The current repository implements the documentation site and simulated graph. A planned capability becomes implementation work only when the current task includes it.
+This plan is not an instruction to expand the runtime during every task. The repository includes the single-Agent CLI proof and documentation site; the graph is still simulated. [Submit a task](cli-quickstart.md) records the current boundary. A planned capability becomes implementation work only when the current task includes it.
 
 ## Completion and scope changes
 
