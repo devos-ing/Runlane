@@ -2,32 +2,33 @@
 
 A `Trigger` requests a run of its containing workflow version. Workflow definitions declare triggers separately from their stages. Manual and cron requests use the same validation, frozen snapshot, and admission path.
 
-The `@runlane/sdk` examples are proposed definitions, not working scheduler code. The `Trigger` factories return definitions. They do not create active schedules.
+These plain objects are proposed definitions, not working scheduler code. Manual starts belong to the first usable milestone. Cron follows the real workflow and live graph. Importing a definition does not enable its schedule.
 
 ## Define manual and cron triggers
 
 ```js
 // A reusable trigger list imported by a workflow module.
-import { Trigger } from "@runlane/sdk";
-
 export const triggers = [
-	Trigger.manual({
+	{
+		kind: "manual",
 		id: "manual-change-review",
 		version: 1,
-	}),
-	Trigger.cron("0 9 * * 1-5", {
+	},
+	{
+		kind: "cron",
 		id: "weekday-dependency-audit",
 		version: 1,
+		expression: "0 9 * * 1-5",
 		timezone: "Asia/Hong_Kong",
 		inputs: { repository: "example/service", task: "Review dependency changes" },
 		overlapPolicy: "skip-unfinished",
 		offlinePolicy: "skip",
 		enabled: false,
-	}),
+	},
 ];
 ```
 
-Pass this list as `triggers` in `new Workflow({ ... })`, or define the same list inline as shown in [Define a workflow](workflows.md).
+Reference this list in the workflow object's `triggers` field. The first milestone's [workflow example](workflows.md) includes only a manual trigger.
 
 The cron expression uses the five-field convention. It describes 09:00 on weekdays in Hong Kong. The disabled definition does not admit scheduled runs. Enabling it must be a separate, explicit application action that validates the workflow, model profiles, inputs, and time zone first.
 

@@ -1,115 +1,124 @@
 # Define agents and actions
 
-An `Agent` holds instructions, an explicit model profile, reasoning effort, allowed actions, and a result contract. A `ScriptAction` describes one process to run. Workflow stages refer to either kind through the same `run` field.
+An Agent is reusable configuration for a Pi invocation. A ScriptAction describes a process to run. Workflow stages refer to either through `run`. Definitions are plain objects; runtime adapters share an execution interface without a required base class.
 
-The `@runlane/sdk` API below is a proposal. No SDK loader, agent runner, or script adapter is implemented.
+These examples describe proposed configuration. The loader, schemas, and runtime are not implemented. Public SDK packaging and constructor helpers can wait until they remove demonstrated duplication.
 
-## Define reusable agents
+## Define an agent as data
 
 ```js
 // agents/advisor.mjs
-import { Agent } from "@runlane/sdk";
+import { taskInput } from "../schemas/inputs.mjs";
+import { planResult } from "../schemas/results.mjs";
 
-export const advisor = new Agent({
+export const advisor = {
+	kind: "agent",
 	id: "advisor",
 	instructions: { file: new URL("../prompts/advisor.md", import.meta.url) },
-	input: { contract: "task-context-v1" },
+	input: taskInput,
 	modelProfile: "planning-model",
 	reasoning: "high",
 	actions: ["files.read", "files.search"],
-	result: { contract: "plan-v1", outcomes: ["ready", "needs_input"] },
-});
+	result: planResult,
+};
 ```
 
-An agent definition declares the input context it accepts, its instructions, model profile, reasoning effort, allowed action IDs, and result contract. The contract names the accepted `outcome` values, its success outcome, and the corresponding structured data. Any outcomes repeated in configuration must agree with that contract. The workflow maps those outcomes to routes. A model profile resolves to an explicit provider and model configuration. If that profile is unavailable, the runner reports a blocker. It does not choose a substitute.
+The model profile resolves to an explicit provider and model. An unavailable profile blocks the invocation. Advisor, Implementer, and Reviewer are Agent presets, not subclasses. Reuse configuration with imports and object spread. Mutable attempts, outputs, and status belong to the run.
 
-Reuse a definition by importing it into another workflow or exporting it from a trusted preset package. Do not create a public `AgentBinding` type for stage-specific copies. A stage assignment has a stable local ID for event and result records; the referenced `Agent` remains unchanged. The Advisor, Implementer, and Reviewer are presets, not subclasses. Their roles do not need separate execution engines.
+## Define each result schema once
 
-Agent definitions carry no mutable run state. Attempts, outputs, and status belong to a run snapshot and its events. The SDK can route agents and actions through an internal `Executable` contract, but contributors define `Agent` and action values instead of extending that internal contract.
+The imported schema is the source of truth for the result shape and allowed outcomes. Do not combine a contract registry ID with a second `outcomes` list that must stay synchronized. The runner validates results against the schema and verifies that `on` covers its outcome enum. Route mappings add destinations; they do not redefine the schema.
 
-Reusable agents accept only their declared input context. A workflow supplies frozen run inputs and prior validated results through that contract. It does not rely on mutable shared state between assignments.
+This proposed JSON Schema illustrates the review result envelope. A concrete workflow can specify the required fields inside `data` more narrowly:
 
-Parallel reviewers can use separate explicit model profiles:
+```js
+// schemas/results.mjs
+export const reviewResult = {
+	type: "object",
+	required: ["outcome", "data"],
+	additionalProperties: false,
+	properties: {
+		outcome: {
+			type: "string",
+			enum: ["approved", "changes_requested", "needs_input"],
+		},
+		data: { type: "object" },
+	},
+};
+```
+
+Schema-validator selection is implementation work. The other schema imports in these examples follow this same pattern; they are not references to an implemented global schema registry.
+
+Parallel reviewers share settings and a result schema while selecting different models:
 
 ```js
 // agents/reviewers.mjs
-import { Agent } from "@runlane/sdk";
+import { candidateInput } from "../schemas/inputs.mjs";
+import { reviewResult } from "../schemas/results.mjs";
 
 const reviewerSettings = {
+	kind: "agent",
 	instructions: { file: new URL("../prompts/reviewer.md", import.meta.url) },
-	input: { contract: "candidate-review-v1" },
+	input: candidateInput,
 	reasoning: "high",
 	actions: ["files.read", "files.search"],
-	result: {
-		contract: "review-v1",
-		outcomes: ["approved", "changes_requested", "needs_input"],
-	},
+	result: reviewResult,
 };
 
-export const correctness = new Agent({
+export const correctness = {
 	...reviewerSettings,
 	id: "correctness-reviewer",
 	modelProfile: "review-model-a",
-});
+};
 
-export const maintainability = new Agent({
+export const maintainability = {
 	...reviewerSettings,
 	id: "maintainability-reviewer",
 	modelProfile: "review-model-b",
-});
+};
 ```
 
-## Describe an action
-
-An action can be a trusted built-in capability, a script, or an application-owned operation. Agent `actions` lists the IDs that the agent may call. Workflow stages can run an action directly through the same `run` field used for agents.
+## Describe a script action
 
 ```js
 // actions/check-dependencies.mjs
-import { ScriptAction } from "@runlane/sdk";
+import { candidateInput } from "../schemas/inputs.mjs";
+import { checkResult } from "../schemas/results.mjs";
 
-export const checkDependencies = new ScriptAction({
+export const checkDependencies = {
+	kind: "script",
 	id: "dependency-check",
 	executable: "bun",
 	scriptFile: new URL("../scripts/check-dependencies.mjs", import.meta.url),
 	args: [],
 	timeoutMs: 60_000,
-	result: { contract: "check-v1", outcomes: ["pass", "fail", "unknown"] },
-});
+	input: candidateInput,
+	result: checkResult,
+};
 ```
 
-Resolve prompt and script URLs against the declaring module. The loader normalizes them into retained source references. The script's execution directory is a separate run setting.
+Resolve prompt and script URLs against their declaring module. Retain the supported source files for the run. The script's execution directory is a separate setting.
 
-The application validates action IDs against allowed capabilities and workflow policy before a run starts. Approval and publication remain application-owned, stage-only actions. Adding their IDs to an Agent does not grant permission to invoke them.
-
-## Use a JSON process protocol
-
-The runner starts a script process from its configured executable and working directory. It writes one JSON request to stdin. A request includes the run and attempt IDs, stage and assignment IDs, frozen workflow inputs, and the validated results made available to that action.
-
-```json
-{
-  "runId": "run-0241",
-  "attemptId": "attempt-0004",
-  "stageId": "check",
-  "assignmentId": "dependency-check",
-  "inputs": { "repository": "example/repo" },
-  "priorResults": { "implement": { "outcome": "completed", "candidateRef": "candidate-2" } }
-}
-```
-
-The script writes exactly one bounded JSON object to stdout. The object must match the declared result contract and include a named outcome. It writes human-readable diagnostics to stderr. The adapter also bounds stdin.
+The runner passes bounded JSON on stdin, including workspace, run, stage, and attempt identity, declared inputs, and relevant validated prior results. The script emits one result object on stdout and diagnostics on stderr. Input, output, and diagnostics have size limits.
 
 ```json
 { "outcome": "pass", "data": { "checkedFiles": 12 } }
 ```
 
-The runner validates the result before routing. It bounds stdout and stderr by configured byte limits. Malformed JSON, a contract mismatch, a nonzero exit, or a timeout is an execution failure, separate from a valid `outcome: "fail"`. None of those failures is a passing result. The runner records bounded output, exit status, and timing according to the configured retention policy.
+A completed check returns `pass`, `fail`, or `unknown` with exit code zero. A nonzero exit, launch failure, timeout, or invalid result is an execution failure. It does not silently select the `fail` repair route. Record bounded output, exit status, and timing.
 
-A completed check returns `pass`, `fail`, or `unknown` with exit code zero. A nonzero exit or launch failure blocks execution rather than selecting a repair route.
+## Keep decision rules inside their source
 
-## Treat definition code as trusted code
+A ScriptAction can use ordinary conditions or an expression library to return a declared outcome. An Advisor can return the same shape. Neither requires another executor hierarchy or a generic policy language.
 
-Register the directories from which Runlane may load workflow, agent, action, and trigger definitions. Loading an `.mjs` file executes that module and its imports. A root setting controls what the application loads; it does not sandbox JavaScript, packages, or a script process. Schema validation checks the returned definition values. It does not make imported code safe.
+Later, a Jev-backed Action can satisfy that interface. The Action owns provider normalization and confidence thresholds. It returns the final `outcome` and preserves the provider's proposal, confidence, and local rule settings as evidence. The runner validates that result and maps it through `on`; it does not interpret Jev confidence or apply another decision policy.
 
-Use `.mjs` as the reference authoring format. `.ts` authoring is optional and depends on an explicitly configured loader. Keep definitions declarative: supported values include IDs, settings, paths, result schemas, and other data. Do not put callbacks or closures in a definition. The runner must not promise to serialize arbitrary JavaScript.
+A valid uncertain response may yield `needs_input`. Provider errors, unsupported choices, and malformed responses remain failures. See [Routing and loops](routing-loops.md) for persistence and recovery.
 
-The `ScriptAction` file is executable code too. Review it and its dependencies before adding its root. A configured timeout limits how long the process may run; it does not claim to sandbox the process.
+Model-backed Actions use the shared model-call capacity and normal attempt, timeout, cancellation, and usage records. A deterministic script needs no model slot. Managed model calls use a provider adapter; arbitrary HTTP calls inside contributed scripts are not automatically visible to the scheduler. Jev integration follows the real workflow and live graph milestone.
+
+## Preserve execution controls
+
+Validate action IDs and declared capabilities before execution. Approval and publication remain application-owned, stage-only operations. Listing their IDs in an Agent does not grant permission to invoke them.
+
+Only load explicitly trusted definition roots. Importing `.mjs` executes JavaScript and its imports; schema validation and working directories are not sandboxes. Runtime work belongs in referenced Agents or Actions, not callbacks hidden in graph edges. The initial loader accepts a controlled source set as described in [Define a workflow](workflows.md).

@@ -2,7 +2,7 @@
 
 React Flow renders the workflow and its execution state. The runner remains responsible for deciding what actually executes.
 
-The delivery starts with a CLI and durable trace. The planned Desktop client reuses this React UI and connects to the same service. Its window can close while admitted work continues. A standalone browser client can use the same presentation later without becoming another runner.
+The first usable milestone connects this existing React UI to the foreground runner's real records. It shows a workflow, parallel reviews, a bounded repair, and failure evidence before Jev integration or desktop packaging. A later Desktop client reuses the same UI and service. Closing either client leaves admitted work running while the service is available.
 
 The example below uses the real `@xyflow/react` library. Drag nodes to explore layout, select an execution to inspect its trace, or step through the simulated events.
 
@@ -38,6 +38,14 @@ The `.mjs` workflow is the authoring source. The loader produces a validated gra
 Store layout separately by workspace, workflow version, and stable node ID. Moving nodes affects presentation only. The first version does not add execution edges or rewrite source files from the canvas. Arbitrary JavaScript cannot reliably round-trip through a visual editor.
 
 For an active run, display its frozen graph and source version. A changed workflow file updates the definition preview and future runs without changing an existing run's graph.
+
+## Show replaceable decision sources
+
+A decision stage uses the same graph structure whether it runs a script, Advisor, or Jev Action. Its `on` map declares candidate edges before execution. The model cannot add a node or return an undeclared destination.
+
+The inspector shows the source, input references, final outcome, and supporting evidence returned by the Agent or Action. A later Jev Action may include its proposed choice, confidence, and local rule settings. Display that evidence without interpreting confidence in the UI. Highlight the committed route. Provider failures remain failed or blocked attempts without an invented selected edge.
+
+Replay reads recorded final results and routes. It does not call a model or re-run an Action's rules. These are planned live-client behaviors; the current preview still uses its existing sample traces.
 
 ## Project run events onto the graph
 
