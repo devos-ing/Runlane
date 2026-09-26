@@ -74,6 +74,13 @@ const navigation = [
     group: "Build & observe",
   },
   {
+    id: "development-scope",
+    title: "Development scope",
+    description:
+      "Goals, reasons, boundaries, and completion rules for development.",
+    group: "Team reference",
+  },
+  {
     id: "decisions",
     title: "Decisions & delivery",
     description: "Agreed scope, milestones, and teammate discussion.",

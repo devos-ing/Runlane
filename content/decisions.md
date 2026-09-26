@@ -2,6 +2,8 @@
 
 Use this page as the starting point for a teammate design review. This documentation set reflects the workflow-platform direction and supersedes the earlier session- and Ticket-centered product framing.
 
+Use [Development scope](development-scope.md) to bound a work item by its goal, reason, approach, exclusions, and completion evidence.
+
 ## Agreed direction
 
 - Build a local-first workflow automation and observability platform for agents.
