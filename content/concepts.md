@@ -6,6 +6,7 @@ The product model describes reusable definitions and observable executions. Each
 
 | Concept | Meaning |
 | --- | --- |
+| Workspace | A registered identity and source root that groups workflows, configuration, schedules, and execution records. |
 | Workflow | A versioned process authored in code, containing stages, inputs, routes, and triggers. |
 | Stage | A step that assigns work to agents or direct actions and routes the result. |
 | Agent | A reusable configuration with instructions, capabilities, a model profile, reasoning effort, and a result contract. |
@@ -13,6 +14,8 @@ The product model describes reusable definitions and observable executions. Each
 | Action | One executable capability, such as a tool call, script, or host operation. |
 | Route | A typed rule selecting the next stage, a declared loop, completion, or stopped execution. |
 | Trigger | An event or command requesting a new run. |
+
+A workspace owns workflow registrations. It need not be a Git repository, and it is distinct from a coding run's worktree. Workflow and stage definitions remain reusable across workspaces.
 
 An agent assignment is the use of an Agent in a stage. It has a stable local ID for trace attribution, but it is not a separate public `AgentBinding` configuration type. Import an Agent to reuse it. Create another Agent from shared settings when a different model or capability set is needed.
 
@@ -26,19 +29,21 @@ The public constructors create definitions. Runtime adapters perform the work th
 
 | Module | Responsibility |
 | --- | --- |
+| Workspace registry | Resolve stable workspace IDs, names, and source roots for every client. |
 | Definition loader | Load trusted author code, validate its exported workflow, and retain the source version for a run. |
 | Runner | Admit work, invoke execution adapters, evaluate routes, and enforce parallel and loop limits. |
 | Pi adapter | Execute configured agents and translate their observable events. |
 | Action adapters | Execute tools, scripts, and application-owned operations. |
 | Trigger service | Request runs from manual starts and registered schedules. |
-| Run store | Persist attempts, events, artifacts, and transitions using the selected Pi durable foundation. |
+| Run store | Persist workspace ownership, attempts, events, artifacts, and transitions using the selected Pi durable foundation. |
+| Client interface | Expose validation, submission, status, cancellation, snapshots, and events to CLI and graphical clients. |
 | Graph and inspector | Display the workflow and recorded execution state. |
 
 These are design boundaries, not a requirement for separate packages or services. The current repository implements the documentation site and simulated graph only.
 
 ## Definitions are not runs
 
-A **run** executes one frozen workflow definition with specific inputs and resolved model profiles. Its stage and agent attempts record actual work. Reusing a definition does not reuse mutable execution state.
+A **run** executes one frozen workflow definition within a workspace, with specific inputs and resolved model profiles. Its stage and agent attempts record actual work. Reusing a definition does not reuse mutable execution state.
 
 The run also retains the corresponding scripts, prompts, and dependency version references. A definition hash alone cannot recover deleted or changed source files. Source edits affect new runs. An existing run must resume with its recorded version or report that the required source is unavailable.
 
@@ -58,6 +63,6 @@ Checks and deterministic scripts do not consume a model call just to start a pro
 
 ## State is owned by the runner
 
-The runner decides which work is eligible and records outcomes. The browser displays that state. Moving a node changes layout; it does not start, complete, or approve a stage.
+The runner decides which work is eligible and records outcomes. One local service owns that state for all registered workspaces. Foreground execution and a daemon are two launch modes for the same service. The CLI and graphical clients display recorded state. Moving a node changes layout; it does not start, complete, or approve a stage.
 
-Default limits are two active runs and two simultaneous model calls globally, both configurable. Independent runs and parallel reviewers share the model-call capacity. A parent stage waiting for its reviewers must not hold a model-call slot.
+Default limits are two active runs and two simultaneous model calls across all workspaces, both configurable. Independent runs and parallel reviewers share the model-call capacity. A parent stage waiting for its reviewers must not hold a model-call slot. See [CLI, daemon, and workspaces](cli-workspaces.md) for ownership and lifecycle rules.

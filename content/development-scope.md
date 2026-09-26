@@ -18,9 +18,9 @@ Development needs the same discipline. Adding a new agent should not produce ano
 
 ## How
 
-The agreed design uses trusted `.mjs` definitions, a validated graph, and a retained source version for each run. One runner owns execution state, outcome routing, capacity, and bounded repetition. Pi executes agents. Pi durable is the selected persistence foundation, pending compatibility and transaction evidence.
+The agreed design uses trusted `.mjs` definitions, a validated graph, and a retained source version for each run. One service for the current operating-system user manages registered workspaces. Its runner owns execution state, outcome routing, shared capacity, and bounded repetition. Pi executes agents. Pi durable is the selected persistence foundation, pending compatibility and transaction evidence.
 
-React Flow displays definitions and recorded execution state. The proposed web and CLI clients share the application service. The CLI remains a recommendation, as recorded in [Decisions and delivery](decisions.md).
+Delivery starts with a CLI and foreground service, then adds daemon lifecycle and multiple workspaces. Durable trace is part of the first invocation path. The planned Desktop client reuses the React and React Flow UI through the same operations and events. A separate web product and a TUI remain later options. See [CLI, daemon, and workspaces](cli-workspaces.md).
 
 Contributors reuse Agent configurations and Action implementations. Keep the shared execution contract small, and keep mutable state on attempts and runs. Extend a module when a current requirement needs new behavior. A hypothetical future consumer does not justify a new framework or package.
 
@@ -28,13 +28,14 @@ Contributors reuse Agent configurations and Action implementations. Keep the sha
 
 | Area | Runlane owns | Boundary |
 | --- | --- | --- |
+| Workspaces | Stable registration, source roots, and ownership of workflows and execution records. | A workspace need not be a Git repository and is not a process sandbox. Shared definitions do not share run state. |
 | Workflow authoring | Stages, configured agents, scripts, triggers, and typed routes. | `.mjs` remains authoritative. Canvas layout changes do not rewrite execution logic. |
 | Orchestration | Admission, attempts, result validation, routing, cancellation, and recovery. | Reuse Pi's agent loop and conversation internals. Keep session management below the product. |
 | Observability | Run history, graph state, trace events, and evidence references. | Show observable execution. Simulated events never prove a live integration. |
 | Persistence | Run identity, ordering, loop counters, and atomic transitions. | Use Pi durable where verified. Avoid a second authoritative conversation store. |
 | Extensions | Agent definitions, prompts, scripts, and declared capabilities. | Load explicitly trusted sources. Validation and working directories are not sandboxes. |
 | Coding workflows | Optional Ticket input, candidate checks, worktrees, review, and publication actions. | Keep those requirements in the coding template, outside the general workflow core. |
-| Deployment | One local application service and its clients. | Hosted runners, distributed scheduling, tenant management, and a plugin marketplace are outside current scope. |
+| Deployment | One user-owned local service, foreground and daemon launch modes, and CLI and graphical clients. | Hosted runners, distributed scheduling, tenant management, and a plugin marketplace are outside current scope. Automatic OS service installation is deferred. |
 
 GitHub Actions YAML compatibility, a chat or IDE product, arbitrary JavaScript visual editing, and automatic model fallback are also outside the current direction.
 
@@ -60,14 +61,14 @@ Planning, implementation, and review use this same record. Planning identifies t
 
 | Field | Runner proof |
 | --- | --- |
-| Goal | Start one manual workflow with one configured Agent and inspect its live graph and trace. |
+| Goal | Register one workspace, start one manual workflow with one configured Agent from the CLI, and inspect durable status and trace. |
 | Why | Prove authoring, execution, persistence, and observation work together before adding more orchestration. |
-| How | Load one trusted workflow, validate and retain its source, invoke Pi, persist the attempt and events, and update the browser. |
-| In scope | The loader, one invocation path, the required durable records, and the graph and inspector updates. |
-| Boundaries | Explicit model and effort, validated input and output, one state owner, retained source, and visible cancellation or interruption. |
-| Out of scope | Parallel stages, repair loops, cron, a visual code editor, PR publication, and a general plugin system. |
+| How | Run the service in the foreground, resolve a registered workspace, validate and retain its workflow source, invoke Pi, and expose recorded events to the CLI. |
+| In scope | Minimal workspace registration, the loader, one invocation path, required durable records, CLI status, and trace output. |
+| Boundaries | Explicit model and effort, validated input and output, workspace attribution, one state owner, retained source, and visible cancellation or interruption. |
+| Out of scope | Background process management, parallel stages, repair loops, cron, desktop packaging, live graph integration, PR publication, and a general plugin system. |
 | Evidence | Typecheck, lint, build, and a focused permitted integration check covering the real invocation and the relevant interruption or failure path. |
-| Done | A real result appears in the recorded run and trace. Invalid input or an unavailable model cannot appear as success. A refresh preserves run identity, and interruption does not silently launch duplicate work. |
+| Done | A real result appears in the workspace's recorded run and trace. Invalid input or an unavailable model cannot appear as success. Client reconnection preserves run identity. Service interruption does not silently duplicate work. |
 | Stop or revisit | Pi durable cannot meet the required atomic transition, the selected Pi version fails the required lifecycle, or source retention requires capabilities outside this slice. Record the evidence and resolve the affected design choice. |
 
 This is the next planned runtime slice, not an instruction to implement it during every task. The current repository implements the documentation site and simulated graph. A planned capability becomes implementation work only when the current task includes it.

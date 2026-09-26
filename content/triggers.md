@@ -33,11 +33,15 @@ The cron expression uses the five-field convention. It describes 09:00 on weekda
 
 Use stable trigger IDs and increment the trigger version when its schedule or inputs change. Preview upcoming occurrence times before enabling a cron trigger. Use a cron parser with explicit time-zone support and document its daylight-saving behavior.
 
-The proposed trigger IDs are unique within a registered project. Check overlap across versions of the same trigger ID. Updating a schedule must not bypass an unfinished run. Apply any shared concurrency key too, such as a coding template's Ticket identity.
+Trigger IDs are unique within a workflow registration. Qualify them with workspace ID and workflow ID. Two workspaces may use the same reusable workflow and trigger names without sharing schedule state.
+
+Check overlap across versions of the same workspace, workflow, and trigger IDs. Updating a schedule must not bypass an unfinished run. Apply any shared concurrency key too, such as a coding template's workspace and Ticket identity.
 
 ## Admit each occurrence once
 
-Within the registered project, identify a cron occurrence by trigger ID, trigger version, and scheduled UTC instant. Persist the occurrence and its admission decision atomically with any queued run. If delivery repeats, return the existing occurrence instead of creating a second run.
+Identify a cron occurrence by workspace ID, workflow ID, trigger ID, trigger version, and scheduled UTC instant. Persist the occurrence and its admission decision atomically with any queued run. If delivery repeats, return the existing occurrence.
+
+The registered schedule pins its workflow source version. Changing that version or the schedule inputs creates a new trigger version. Already admitted runs retain their original workspace and source identity.
 
 `overlapPolicy: "skip-unfinished"` skips an occurrence while the previous run from that trigger remains nonterminal, including when it waits for user input. `offlinePolicy: "skip"` discards occurrences that pass while the scheduler is offline. The scheduler does not catch up missed times or wake a sleeping computer.
 
@@ -45,6 +49,8 @@ Manual requests can supply workflow inputs when the user starts a run. Cron inpu
 
 ## Share application capacity
 
-Manual and cron runs share application-wide limits. The defaults are two active runs and two concurrent model calls, and the application can configure both values. Work that exceeds either limit waits in a visible queued state. Triggers do not create separate capacity pools.
+Manual and cron runs share service-wide limits across every workspace. The defaults are two active runs and two concurrent model calls, both configurable. Work that exceeds either limit waits in a visible queued state. Triggers and workspaces do not create separate capacity pools.
+
+Schedules belong to the service, not a CLI connection or desktop window. Closing a client leaves them active. A service stop disables admission and scheduling until startup and recovery complete. See [CLI, daemon, and workspaces](cli-workspaces.md) for lifecycle behavior.
 
 GitHub event triggers and remote runners are later integration decisions. The GitHub Actions comparison does not promise compatibility with its event API or workflow syntax.
