@@ -96,6 +96,8 @@ Start `serve` again with the same state directory to inspect prior runs. Queued 
 
 The initial workflow declares `modelProfiles` as a map from profile names to `{ provider, model }`. The Agent references one profile and sets its reasoning effort. Its result schema must require an `outcome` string enum, and `on` must cover every outcome with either `{ complete: true }` or `{ stop: "needs_input" }`.
 
+The [Runtime parent class](runtimes.md) and Profile `runtime` selector are planned. Do not add that selector to this runnable example yet. The current service invokes Pi directly; selecting its `openai-codex` provider does not run Codex's own agent system.
+
 The service defaults to two concurrent single-Agent runs; `serve --max-calls N` adjusts this limit. The snapshot retains resolved schemas, prompt text, inputs, source-content identity, and model settings. It does not need to re-import author code to display or settle recorded work. Unsupported tools, scripts, schedules, loops, and multi-step definitions are rejected rather than partially executed.
 
 Use `bun run runlane --help` for the command list. Slice A does not complete the full workflow-and-live-graph milestone in [Decisions and delivery](decisions.md).

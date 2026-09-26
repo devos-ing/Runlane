@@ -56,6 +56,13 @@ const navigation = [
     group: "System design",
   },
   {
+    id: "runtimes",
+    title: "Runtime parent class",
+    description:
+      "Shared execution contract and Pi, Codex, and Claude subclasses.",
+    group: "System design",
+  },
+  {
     id: "routing-loops",
     title: "Routing & loops",
     description: "Replaceable decisions, explicit routes, and bounded loops.",

@@ -12,10 +12,10 @@ The examples use the target Step names, including `entryStep` for loop entry. Th
 | --- | --- |
 | Existing step output | Return the result already needed by the workflow. No extra decision call is required. |
 | ScriptAction | Use ordinary conditions or an expression library over declared inputs. Return the final outcome. |
-| Advisor Agent | Produce a result through Pi using the same input and result schemas as other sources. |
+| Advisor Agent | Produce a result through its selected Runtime, initially Pi, using the same input and result schemas as other sources. |
 | Jev Action, later | Normalize the provider response, apply its own confidence rules, and return the final outcome and evidence. |
 
-The runner owns schema validation, destination checks, capacity, cancellation, and durable transitions. It does not understand model confidence or maintain a generic DecisionPolicy definition. Shared execution types are sufficient; these sources do not need another inheritance hierarchy.
+The runner owns schema validation, destination checks, capacity, cancellation, and durable transitions. It does not understand model confidence or maintain a generic DecisionPolicy definition. Agents use the Runtime execution contract; Script and Jev Actions keep their direct paths. Decision sources do not need their own inheritance hierarchy.
 
 Keep file access and model requests inside visible Agents or Actions. An edge must not hide those operations. A separate expression engine is unnecessary until a real workflow needs one.
 
@@ -100,6 +100,8 @@ A repair produces a new candidate and invalidates prior check and review evidenc
 ## Share capacity and trace
 
 Agents and model-backed Actions, including a later Jev adapter, share the default limit of two model calls across all workspaces. Waiting steps and deterministic scripts do not hold model slots. Managed model calls use the shared provider path.
+
+Additional Runtimes must prove their native requests obey this limit. Native fan-out cannot be counted as one model call merely because it belongs to one attempt. See [Runtime capacity](runtimes.md#capacity-is-an-integration-requirement).
 
 The trace records source identity, input references, model when used, final result, supporting evidence, selected destination, timing, and reported usage. Missing usage stays unavailable. The graph highlights the committed route; the inspector shows the Action's evidence without re-running its logic.
 

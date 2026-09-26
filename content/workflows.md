@@ -110,6 +110,8 @@ A replacement source must satisfy the same input and result schemas. Replacing i
 
 At admission, freeze resolved definitions and schemas, input references, profiles, source identity, and the execution directory. Retain the explicitly supported workflow modules, prompts, scripts, schemas, and lockfile in an immutable source directory or a small retained copy. Record adapter and dependency versions used by the invocation.
 
+The target Agent Profile includes a Runtime ID. Retain that ID and the Runtime implementation version with its supported provider/model settings and Agent effort. Class instances and native clients remain in the service. [Runtime parent class](runtimes.md) describes the planned extraction; the current CLI's Profile still accepts only provider and model.
+
 The first milestone supports one known source set and an existing, verified dependency environment. Imports or resources outside that supported set block admission. It does not discover and bundle arbitrary transitive dependencies, build containers, reconstruct environments, or serialize closures.
 
 Recovery uses the recorded sources and verifies that the required environment remains available. Missing, changed, or unsupported inputs leave the run blocked. A hash identifies content but cannot restore a missing file. Edits affect new runs; they must not silently change a pending invocation in an existing run.
@@ -119,5 +121,7 @@ Commit completed results, selected routes, loop counters, and pending next work 
 ## Share execution capacity
 
 The service defaults to two active runs and two concurrent model calls across all registered workspaces. Independent runs and parallel reviewers share those configurable limits. Waiting for capacity is visible in CLI status and the live graph.
+
+Additional Runtimes must verify native request control before participating under that policy. Limiting Runtime attempts does not bound hidden subagent calls. [Runtime capacity](runtimes.md#capacity-is-an-integration-requirement) records this integration requirement.
 
 The first usable milestone includes both forms of parallelism and connects the existing React Flow view to real events. Jev, background launch management, desktop packaging, and cron follow that milestone. Tickets, repository provisioning, and PR publication remain optional coding-template capabilities.

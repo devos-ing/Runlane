@@ -12,9 +12,11 @@ The proof has executed `openai-codex/gpt-6-luna` with `low` effort, using config
 
 ## The agent execution boundary
 
-Reuse the full coding-agent SDK for its agent loop, selected model, tools, events, resource loading, and lifecycle controls. A small adapter turns a configured Agent into an invocation and translates its observable events into our trace contract. [Pi SDK](https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/sdk.md)
+Reuse the full coding-agent SDK for its agent loop, selected model, tools, events, resource loading, and lifecycle controls. The planned `PiRuntime` extends the [Runtime parent class](runtimes.md), turns a configured Agent into an invocation, and translates observable events into the shared contract. The current implementation still uses the direct `executeAgent` function. [Pi SDK](https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/sdk.md)
 
 Use Pi's model runtime for provider/model lookup and supported authentication. The application validates the agent's configuration and records the actual model and effort; it never silently substitutes an unavailable model. [Model selection](https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/examples/sdk/02-custom-model.ts)
+
+Pi's `ModelRuntime` is an SDK detail inside `PiRuntime`, not Runlane's Runtime parent class. The current `openai-codex` provider still executes through Pi. A future `CodexRuntime` invokes Codex's own agent system. Selecting another Runtime does not replace the Workflow Runner or application store.
 
 ## Persistence with Pi durable
 
@@ -24,7 +26,7 @@ We still define run identity, attempt state, event ordering, loop counters, appr
 
 The user-owned service is the sole writer of application execution records for its state directory. It owns the workspace registry and records workspace identity on runs, schedules, events, and evidence. Pi durable does not provide our workspace registry, process ownership, or daemon lifecycle rules automatically.
 
-Pi remains authoritative for its conversation history. Avoid creating a second transcript store or a product-facing session manager.
+Pi remains authoritative for its conversation history. Other Runtimes retain their native history in their own integrations. Pi durable continues to store Runlane's application records for all Runtimes. An opaque execution reference identifies native evidence without creating a second transcript store or a product-facing session manager.
 
 ## Reuse resources and tools
 
@@ -38,7 +40,7 @@ Runlane also owns the `.mjs` definition loader and retention of each run's sourc
 
 Jev is a later decision source, after the real workflow and live graph. Its Action adapter uses the provider's decision interface, applies its own confidence rules, and returns the final result with evidence. Do not assume that a decision-model endpoint accepts Pi's conversational or tool-loop protocol.
 
-Keep ordinary Agent execution in Pi. The Jev path shares attempt records, the global model-call limit, timeout and cancellation handling, reported usage, and durable decision evidence. It does not create a second agent runtime. Profiles select an explicit provider and version, and the adapter validates the capabilities it requires.
+Agent execution uses the selected Runtime, initially Pi. The direct Jev Action path shares attempt records, the global model-call limit, timeout and cancellation handling, reported usage, and durable decision evidence. It does not inherit from Runtime or add an agent loop. Its Profile selects an explicit provider and version, and the adapter validates the capabilities it requires.
 
 The runner validates the final result against its imported schema and commits the declared route. It has no generic confidence-policy module. A Jev Action can convert valid uncertainty to `needs_input`; provider failures remain failures. The [routing design](routing-loops.md) defines that interface. Jev integration has not been implemented or verified in this repository.
 
