@@ -56,10 +56,10 @@ export const executionDetails: Record<
     },
   },
   review: {
-    title: "Review stage",
+    title: "Review step",
     model: "2 read-only reviewers",
     purpose:
-      "Wait for every designated Reviewer. The parent stage holds no model slot.",
+      "Wait for every designated Reviewer. The parent step holds no model slot.",
     input: {
       completion: "all-approved",
       candidateRef: "demo-candidate",
@@ -124,7 +124,7 @@ export function initialNodes(): FlowNode[] {
         kind: "agent",
         status: "queued",
       },
-      ariaLabel: "Plan stage",
+      ariaLabel: "Plan step",
     },
     {
       id: "implement",
@@ -136,7 +136,7 @@ export function initialNodes(): FlowNode[] {
         kind: "agent",
         status: "queued",
       },
-      ariaLabel: "Implement stage",
+      ariaLabel: "Implement step",
     },
     {
       id: "review",
@@ -150,7 +150,7 @@ export function initialNodes(): FlowNode[] {
       },
       style: { width: 230, height: 290 },
       draggable: false,
-      ariaLabel: "Parallel review stage",
+      ariaLabel: "Parallel review step",
     },
     {
       id: "review.correctness",
@@ -276,7 +276,7 @@ const opening: TraceEvent[] = [
     id: "evt-007",
     seconds: 10,
     stage: "review",
-    type: "stage.started",
+    type: "step.started",
     message: "Two independent reviewers acquired the two global slots.",
     updates: {
       review: "running",
@@ -392,7 +392,7 @@ export const repairTrace: TraceEvent[] = [
     id: "repair-013",
     seconds: 20,
     stage: "review",
-    type: "stage.started",
+    type: "step.started",
     message: "Fresh reviewer invocations inspect candidate 2.",
     updates: {
       review: "running",

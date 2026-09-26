@@ -6,7 +6,7 @@ This is a development rule, not a new runtime module. Runtime Actions and their 
 
 ## Goal
 
-Help developers define reusable agent workflows and understand each execution through a graph and trace. A developer should be able to change an agent, model, script, or stage without editing the runner for each workflow.
+Help developers define reusable agent workflows and understand each execution through a graph and trace. A developer should be able to change an agent, model, script, or step without editing the runner for each workflow.
 
 The product reference is GitHub Actions for agent workflows. Runlane makes orchestration and execution evidence visible while Pi handles the agent loop.
 
@@ -18,18 +18,20 @@ Development needs the same discipline. Adding a new agent should not produce ano
 
 ## How
 
-The agreed design uses trusted `.mjs` definitions, a validated graph, and a retained source version for each run. One service for the current operating-system user manages registered workspaces. Its runner owns execution state, outcome routing, shared capacity, and bounded repetition. Pi executes agents. Pi durable is the selected persistence foundation, pending compatibility and transaction evidence.
+The agreed design uses trusted `.mjs` definitions, a validated graph, and a retained source version for each run. One service for the current operating-system user manages registered workspaces. Its runner owns execution state, outcome routing, shared capacity, and bounded repetition. The CLI proof now executes one Agent through Pi and commits run checkpoints through Pi durable on Bun SQLite; broader workflow behavior remains planned.
 
 Delivery starts with a CLI and foreground service. Prove one invocation, then add the real review loop and connect the existing React Flow view to its records. The first usable milestone includes independent runs across workspaces and parallel reviewers under shared limits. Background launch management, Jev, desktop packaging, and cron follow it. A separate web product and a TUI remain later options. See [Decisions and delivery](decisions.md).
 
-Contributors reuse plain Agent and Action configurations and imported result schemas. Keep the execution interface small and mutable state on attempts and runs. A shared type does not require a base class. Extend a module when current implementations need shared behavior; a hypothetical consumer does not justify a new framework or package.
+Contributors configure Workflow, Agent, Action, Trigger, and Profile. Workflow owns its identified steps. Scripts implement Actions; Review is work within the workflow. Reuse plain configurations and imported result schemas, with no standalone Step registry or Review engine. Keep the execution interface small and mutable state on attempts and runs.
 
 ## Product boundaries
 
 | Area | Runlane owns | Boundary |
 | --- | --- | --- |
 | Workspaces | Stable registration, source roots, and ownership of workflows and execution records. | A workspace need not be a Git repository and is not a process sandbox. Shared definitions do not share run state. |
-| Workflow authoring | Stages, configured agents, scripts, triggers, and typed routes. | `.mjs` remains authoritative. Canvas layout changes do not rewrite execution logic. |
+| Workflow authoring | Five components with identified steps inside each Workflow. | `.mjs` remains authoritative. A Step is local workflow data, not another component or registry. |
+| Script Actions | Planned `.mjs` and `.sh` execution using explicit interpreters and one Action contract. | Keep input, output, timeout, cancellation, and trace handling shared. No separate Script engine. |
+| Review | Reviewer Agents and deterministic checking Actions inside a workflow. | Preserve designated-reviewer approval rules. A Trigger requests a new Run; Review assesses existing work. |
 | Orchestration | Admission, attempts, result validation, routing, cancellation, and recovery. | Reuse Pi's agent loop and conversation internals. Keep session management below the product. |
 | Decisions | Replaceable sources that return a schema-validated final outcome and evidence. | Keep confidence rules inside the relevant Action, destinations explicit, and model calls within shared capacity. No generic DecisionPolicy engine. |
 | Observability | Run history, graph state, trace events, and evidence references. | Show observable execution. Simulated events never prove a live integration. |
@@ -67,16 +69,16 @@ Planning, implementation, and review use this same record. Planning identifies t
 | How | Run the service in the foreground, resolve a registered workspace, validate and retain its workflow source, invoke Pi, and expose recorded events to the CLI. |
 | In scope | Minimal workspace registration, the loader, one invocation path, required durable records, CLI status, and trace output. |
 | Boundaries | Explicit model and effort, validated input and output, workspace attribution, one state owner, retained source, and visible cancellation or interruption. |
-| Out of scope | Background process management, Jev integration, parallel stages, repair loops, cron, desktop packaging, live graph integration, PR publication, and a general plugin system. |
+| Out of scope | Background process management, Jev integration, parallel steps, repair loops, cron, desktop packaging, live graph integration, PR publication, and a general plugin system. |
 | Evidence | Typecheck, lint, build, and a focused permitted integration check covering the real invocation and the relevant interruption or failure path. |
 | Done | A real result appears in the workspace's recorded run and trace. Invalid input or an unavailable model cannot appear as success. Client reconnection preserves run identity. Service interruption does not silently duplicate work. |
 | Stop or revisit | Pi durable cannot meet the required atomic transition, the selected Pi version fails the required lifecycle, or source retention requires capabilities outside this slice. Record the evidence and resolve the affected design choice. |
 
-Slice A is the next integration proof, not completion of the product milestone. Slices B and C add the bounded workflow and live graph. Their acceptance evidence must cover a real check and review result, a repair round, a visible failure, both forms of parallelism, shared capacity, and preservation of committed state on reconnect or restart.
+Slice A is implemented as a bounded integration proof, not completion of the product milestone. The Step naming migration precedes slice B and must preserve readable history. Slices B and C add the bounded workflow and live graph. Their acceptance evidence must cover `.mjs` and `.sh` Script Actions, a real review result, a repair round, a visible failure, both forms of parallelism, shared capacity, and preserved state on reconnect or restart.
 
 Use the existing graph for that evidence before adding Jev or desktop packaging. Source retention starts with a controlled set of known files and a verified dependency environment. Unsupported or missing inputs block the run. These boundaries keep the milestone small without dropping validation, recovery, or the user's required parallel behavior.
 
-This plan is not an instruction to implement the runtime during every task. The current repository implements the documentation site and simulated graph. A planned capability becomes implementation work only when the current task includes it.
+This plan is not an instruction to expand the runtime during every task. The repository includes the single-Agent CLI proof and documentation site; the graph is still simulated. [Submit a task](cli-quickstart.md) records the current boundary. A planned capability becomes implementation work only when the current task includes it.
 
 ## Completion and scope changes
 

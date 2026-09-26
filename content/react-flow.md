@@ -10,7 +10,9 @@ The example below uses the real `@xyflow/react` library. Drag nodes to explore l
 
 ## From definitions to nodes
 
-A node has an ID, a position, a type, and data. Our custom node renders the stage or agent label, model alias, and execution status. Assigned reviewers appear inside their parent review stage.
+A node has an ID, a position, a type, and data. Our custom node renders the step or agent label, model alias, and execution status. Assigned reviewers appear inside their parent review step.
+
+A workflow step is local configuration, not a standalone Stage component. Its stable ID gives the diagram and trace a place to attach each attempt. Reusing one Agent in two steps produces two distinct positions. The preview labels use Step; the CLI payload field migration from `stageId` to `stepId` is still planned.
 
 ```tsx
 const node = {
@@ -28,7 +30,7 @@ const node = {
 
 | Execution data | Presentation data |
 | --- | --- |
-| Stage IDs and validated routes | Node positions and viewport |
+| Step IDs and validated routes | Node positions and viewport |
 | Assigned agents and resolved models | Selection and expanded details |
 | Run status and attempt results | Colors, labels, and grouping |
 | Trace event identity | Inspector tab and local filters |
@@ -41,7 +43,7 @@ For an active run, display its frozen graph and source version. A changed workfl
 
 ## Show replaceable decision sources
 
-A decision stage uses the same graph structure whether it runs a script, Advisor, or Jev Action. Its `on` map declares candidate edges before execution. The model cannot add a node or return an undeclared destination.
+A decision step uses the same graph structure whether it runs a script, Advisor, or Jev Action. Its `on` map declares candidate edges before execution. The model cannot add a node or return an undeclared destination.
 
 The inspector shows the source, input references, final outcome, and supporting evidence returned by the Agent or Action. A later Jev Action may include its proposed choice, confidence, and local rule settings. Display that evidence without interpreting confidence in the UI. Highlight the committed route. Provider failures remain failed or blocked attempts without an invented selected edge.
 
@@ -64,6 +66,6 @@ React Flow supplies node rendering, handles, edges, selection, pan, zoom, and vi
 
 ## Start with explicit layout
 
-Use deliberate positions for the first templates. Add an automatic layout library only when real workflow complexity requires it. Keep the graph usable through a stage selector and readable trace so interaction does not depend entirely on dragging.
+Use deliberate positions for the first templates. Add an automatic layout library only when real workflow complexity requires it. Keep the graph usable through a step selector and readable trace so interaction does not depend entirely on dragging.
 
 The preview uses controlled node state and an inspection panel. Its connections are read-only, so a layout experiment cannot change execution semantics. [React Flow API reference](https://reactflow.dev/api-reference/react-flow)

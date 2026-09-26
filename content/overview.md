@@ -4,19 +4,25 @@ Define the work. Connect your agents. See every step.
 
 An automation platform for developers to manage agents, compose workflows, and inspect each run. GitHub Actions is the reference for the execution graph and trace.
 
-> Interactive design preview. Graph events are simulated. The CLI, daemon, workspace registry, Pi integrations, and schedules are not implemented.
+The authoring model has five components: Workflow, Agent, Action, Trigger, and Profile. A Workflow contains steps that invoke Agents or Actions. Scripts implement Actions; Review is a workflow activity.
+
+> The CLI execution proof is available. This graph still uses simulated events. Multi-step execution, background daemon commands, desktop packaging, and schedules remain planned.
 
 <!-- playground -->
+
+Use [Submit a task](cli-quickstart.md) to register a workspace, send a JSON task to a real Pi Agent, and inspect its persisted result. The example produces a plan without editing files.
 
 ## The product in one minute
 
 | Surface | What a developer does |
 | --- | --- |
 | Workspaces | Register source roots and keep workflow definitions and execution records attributable. |
-| Workflows | Author stages, agents, scripts, routes, and triggers in `.mjs` files. |
+| Workflows | Define identified steps, routes, and loops in `.mjs` files. |
 | Agents | Reuse configurations containing instructions, capabilities, result contracts, and selected models. |
+| Actions | Run an operation, with planned Script Action support for `.mjs` and `.sh`. |
+| Profiles | Save explicit provider and model settings used by Agents and model-backed Actions. |
 | Decisions | Return a final outcome from a script or Advisor; add Jev through an Action later. |
-| Runs | Start work and see which stages are queued, running, complete, or blocked. |
+| Runs | Start work and see which steps are queued, running, complete, or blocked. |
 | Trace | Inspect inputs, outputs, action calls, timing, usage, and routing decisions. |
 | Triggers | Start manually, then add calendar schedules through the same runner. |
 
@@ -34,7 +40,7 @@ Tickets, Git worktrees, and draft PRs belong to a coding-workflow template. A wo
 
 ```text
 Trusted workflow.mjs → Validate → Frozen workflow version
-Trigger + inputs → Run of that version → Stages
+Trigger + inputs → Run of that version → Steps
                                         ├─ Agents → allowed Actions
                                         ├─ Direct Actions
                                         └─ Routes → to / repeat / stop / complete
@@ -43,6 +49,8 @@ Trigger + inputs → Run of that version → Stages
 The workflow file is the authoring source. React Flow displays the validated graph, run status, and trace. Its first version supports inspection and layout changes. Execution changes happen in code.
 
 Each run belongs to a registered workspace. Definitions are plain objects with imported schemas. The core loads definitions, runs work through adapters, and stores its records. Shared types do not require parent classes. The runner starts work only after validation and admission.
+
+The docs use Step as the canonical name. The current CLI still uses the earlier `stages` fields; [Submit a task](cli-quickstart.md) explains the runnable format until the planned migration.
 
 Decision sources own their rules and return final outcomes with evidence. The runner validates one result schema and persists the declared route before advancing. It does not apply a generic confidence policy. Model-backed decisions share global capacity. [Routing and loops](routing-loops.md) explains the interface and recovery behavior.
 

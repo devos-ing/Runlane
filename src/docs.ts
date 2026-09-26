@@ -28,7 +28,13 @@ const navigation = [
   {
     id: "concepts",
     title: "Core concepts",
-    description: "Workspaces, workflows, stages, agents, actions, and runs.",
+    description: "Workflow, Agent, Action, Trigger, and Profile.",
+    group: "Start here",
+  },
+  {
+    id: "cli-quickstart",
+    title: "Submit a task",
+    description: "Run the CLI proof with real Pi execution and durable trace.",
     group: "Start here",
   },
   {

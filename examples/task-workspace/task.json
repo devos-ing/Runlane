@@ -1,0 +1,7 @@
+{
+  "task": "Add an empty state to a project's task list.",
+  "acceptanceCriteria": [
+    "Show 'No tasks yet' when the list is empty.",
+    "Show an accessible action labeled 'Create task'."
+  ]
+}
