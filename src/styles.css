@@ -397,6 +397,11 @@ kbd {
 .prose p {
   margin: 14px 0;
 }
+.prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
 .prose a {
   color: #267d57;
   text-decoration: underline;

@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Runlane \u00b7 Runtime parent and subclasses",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "agent-config",
+      "type": "external",
+      "label": "Agent",
+      "sublabel": "Instructions, capabilities, schema",
+      "tag": "PLAIN DATA",
+      "pos": [
+        31,
+        36
+      ],
+      "size": [
+        152,
+        53
+      ]
+    },
+    {
+      "id": "execution-profile",
+      "type": "external",
+      "label": "Profile",
+      "sublabel": "Runtime ID + model settings",
+      "tag": "SELECTOR PLANNED",
+      "pos": [
+        276,
+        36
+      ],
+      "size": [
+        152,
+        53
+      ]
+    },
+    {
+      "id": "workflow-runner",
+      "type": "backend",
+      "label": "Workflow Runner",
+      "sublabel": "Resolve, schedule, checkpoint",
+      "tag": "OWNS WORKFLOW STATE",
+      "pos": [
+        536,
+        36
+      ],
+      "size": [
+        161,
+        53
+      ]
+    },
+    {
+      "id": "runtime-parent",
+      "type": "backend",
+      "label": "abstract Runtime",
+      "sublabel": "run(request, context)",
+      "tag": "PARENT \u00b7 PLANNED",
+      "pos": [
+        536,
+        147
+      ],
+      "size": [
+        161,
+        56
+      ]
+    },
+    {
+      "id": "pi-runtime",
+      "type": "backend",
+      "label": "PiRuntime",
+      "sublabel": "Extract existing Pi execution",
+      "tag": "FIRST SUBCLASS",
+      "pos": [
+        31,
+        268
+      ],
+      "size": [
+        152,
+        53
+      ]
+    },
+    {
+      "id": "codex-runtime",
+      "type": "backend",
+      "label": "CodexRuntime",
+      "sublabel": "Native Codex integration",
+      "tag": "LATER",
+      "pos": [
+        276,
+        268
+      ],
+      "size": [
+        152,
+        53
+      ]
+    },
+    {
+      "id": "claude-runtime",
+      "type": "backend",
+      "label": "ClaudeRuntime",
+      "sublabel": "Native Claude integration",
+      "tag": "LATER",
+      "pos": [
+        536,
+        268
+      ],
+      "size": [
+        161,
+        53
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "agent-profile",
+      "from": "agent-config",
+      "to": "execution-profile",
+      "label": "modelProfile"
+    },
+    {
+      "id": "resolve-profile",
+      "from": "execution-profile",
+      "to": "workflow-runner",
+      "label": "resolved settings"
+    },
+    {
+      "id": "runner-runtime",
+      "from": "workflow-runner",
+      "to": "runtime-parent",
+      "label": "run attempt",
+      "variant": "emphasis",
+      "labelDy": 36
+    },
+    {
+      "id": "pi-extends",
+      "from": "pi-runtime",
+      "to": "runtime-parent",
+      "label": "extends",
+      "variant": "dashed"
+    },
+    {
+      "id": "codex-extends",
+      "from": "codex-runtime",
+      "to": "runtime-parent",
+      "label": "extends",
+      "variant": "dashed"
+    },
+    {
+      "id": "claude-extends",
+      "from": "claude-runtime",
+      "to": "runtime-parent",
+      "label": "extends",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Parent owns the entry point",
+      "items": [
+        "run checks Runtime identity and cancellation before and after native work.",
+        "Subclasses implement validate(request, signal) and execute(request, context)."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Subclasses own native work",
+      "items": [
+        "Translate events, enforce supported settings, and clean up in finally.",
+        "Conversation state belongs to each attempt, not a shared current-session field."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Composition stays explicit",
+      "items": [
+        "The Runner validates output and commits routes. Runtime has no store access.",
+        "Script Actions execute directly and do not inherit Runtime."
+      ]
+    }
+  ]
+}

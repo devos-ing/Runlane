@@ -1,0 +1,149 @@
+{
+  "generator": "Archify 2.16",
+  "diagrams": [
+    {
+      "diagram_type": "architecture",
+      "specification": {
+        "path": "docs/diagrams/system.architecture.json",
+        "sha256": "38e684507437dd07692d0e08bd77ef9769b517319a32ac98285773ad344093c0",
+        "bytes": 4983
+      },
+      "artifact": {
+        "path": "public/diagrams/system.html",
+        "sha256": "7e864fd78e4980d41ca182da57d3f8e4a0b5d525dba27e9f35a7ff2f26f04cfb",
+        "bytes": 716419
+      },
+      "validation": {
+        "profile": "showcase",
+        "passed": 9,
+        "checks": 9,
+        "errors": 0,
+        "warnings": 0
+      },
+      "visual_review": "passed",
+      "correction_rounds": 1,
+      "viewports": [
+        {
+          "width": 1440,
+          "height": 900,
+          "overflowX": false,
+          "overflowY": false
+        },
+        {
+          "width": 1600,
+          "height": 1000,
+          "overflowX": false,
+          "overflowY": false
+        },
+        {
+          "width": 1920,
+          "height": 1080,
+          "overflowX": false,
+          "overflowY": false
+        },
+        {
+          "width": 2048,
+          "height": 1320,
+          "overflowX": false,
+          "overflowY": false
+        }
+      ]
+    },
+    {
+      "diagram_type": "architecture",
+      "specification": {
+        "path": "docs/diagrams/runtime.architecture.json",
+        "sha256": "35b5859a51d4918d4a7571bc3da359b96e583cdc1720b971e3470aa59733d7d7",
+        "bytes": 3912
+      },
+      "artifact": {
+        "path": "public/diagrams/runtime.html",
+        "sha256": "1f7ec483314687986a3dac601379303ba15b4e0df890fb16d5542b8fbd8e769f",
+        "bytes": 709523
+      },
+      "validation": {
+        "profile": "showcase",
+        "passed": 9,
+        "checks": 9,
+        "errors": 0,
+        "warnings": 0
+      },
+      "visual_review": "passed",
+      "correction_rounds": 2,
+      "viewports": [
+        {
+          "width": 1440,
+          "height": 900,
+          "overflowX": false,
+          "overflowY": false
+        },
+        {
+          "width": 1600,
+          "height": 1000,
+          "overflowX": false,
+          "overflowY": false
+        },
+        {
+          "width": 1920,
+          "height": 1080,
+          "overflowX": false,
+          "overflowY": false
+        },
+        {
+          "width": 2048,
+          "height": 1320,
+          "overflowX": false,
+          "overflowY": false
+        }
+      ]
+    },
+    {
+      "diagram_type": "workflow",
+      "specification": {
+        "path": "docs/diagrams/review.workflow.json",
+        "sha256": "2fbca9bf0c69de7a92be6516fb61a77b7ae5b06411ad7735210400e5271ca07f",
+        "bytes": 4408
+      },
+      "artifact": {
+        "path": "public/diagrams/review.html",
+        "sha256": "e7a4f020279c3488a1a0f47ef4c76e58e8d918f1bee153bb9dc9d50b090a680d",
+        "bytes": 710334
+      },
+      "validation": {
+        "profile": "showcase",
+        "passed": 9,
+        "checks": 9,
+        "errors": 0,
+        "warnings": 0
+      },
+      "visual_review": "passed",
+      "correction_rounds": 2,
+      "viewports": [
+        {
+          "width": 1440,
+          "height": 900,
+          "overflowX": false,
+          "overflowY": false
+        },
+        {
+          "width": 1600,
+          "height": 1000,
+          "overflowX": false,
+          "overflowY": false
+        },
+        {
+          "width": 1920,
+          "height": 1080,
+          "overflowX": false,
+          "overflowY": false
+        },
+        {
+          "width": 2048,
+          "height": 1320,
+          "overflowX": false,
+          "overflowY": false
+        }
+      ]
+    }
+  ]
+}

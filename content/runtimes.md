@@ -4,6 +4,8 @@ Runtime is the parent class for executing an Agent through a selected coding-age
 
 This is an agreed design, not an implemented API. The CLI proof still invokes Pi directly through `runtime/agent.ts`. The Runtime extraction starts with that working path. Codex and Claude integrations follow the first usable milestone.
 
+[Architecture review](architecture-map.md) shows the system map, Runtime inheritance, and the planned review loop together.
+
 Workflow, Agent, Action, Trigger, and Profile remain authoring data. Runtime is the execution extension that contributors subclass when adding another coding-agent system. There is no separate `AgentHarness` object or additional adapter class around each Runtime.
 
 ## Responsibilities
