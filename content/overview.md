@@ -12,8 +12,8 @@ An automation platform for developers to manage agents, compose workflows, and i
 
 | Surface | What a developer does |
 | --- | --- |
-| Workflows | Define stages, dependencies, outcome routes, and bounded loops. |
-| Agents | Reuse instructions, capabilities, and result contracts with selected models. |
+| Workflows | Author stages, agents, scripts, routes, and triggers in `.mjs` files. |
+| Agents | Reuse configurations containing instructions, capabilities, result contracts, and selected models. |
 | Runs | Start work and see which stages are queued, running, complete, or blocked. |
 | Trace | Inspect inputs, outputs, action calls, timing, usage, and routing decisions. |
 | Triggers | Start manually, then add calendar schedules through the same runner. |
@@ -29,13 +29,16 @@ Tickets, Git worktrees, and draft PRs belong to a coding-workflow template. A wo
 ## A small, composable system
 
 ```text
-Trigger + inputs → Run → Workflow → Stages
-                                  ├─ Agent bindings → Actions
-                                  ├─ Direct Actions
-                                  └─ Routes → next / repeat / stop
+Trusted workflow.mjs → Validate → Frozen workflow version
+Trigger + inputs → Run of that version → Stages
+                                        ├─ Agents → allowed Actions
+                                        ├─ Direct Actions
+                                        └─ Routes → next / repeat / stop / complete
 ```
 
-Keep definitions separate from their executions. Keep the diagram separate from scheduling. Reuse one agent executor and a small set of action handlers.
+The workflow file is the authoring source. React Flow displays the validated graph, run status, and trace. Its first version supports inspection and layout changes. Execution changes happen in code.
+
+Keep definitions separate from their executions. Reuse one agent executor and a small set of action handlers. The proposed constructors create definitions only; the runner starts work after validation and admission.
 
 ## Read with your teammate
 

@@ -4,6 +4,10 @@ A local Markdown documentation website for Runlane, a workflow automation and ob
 
 Pi SDK execution and Pi durable persistence are planned integrations. This site does not implement the workflow runner or those integrations.
 
+The agreed design uses `.mjs` workflow files to compose stages, configured agents, direct actions, and triggers. React Flow displays the validated graph and each run's trace. Execution changes happen in source files; canvas changes affect layout.
+
+Read [the glossary](CONTEXT.md), [workflow authoring](content/workflows.md), and [decisions and delivery](content/decisions.md) for the current design. The `@runlane/sdk` examples are proposed APIs, not an available package.
+
 ## Start the site
 
 Use Bun to install the pinned dependencies and start the local server:
