@@ -2,6 +2,8 @@
 
 React Flow renders the workflow and its execution state. The runner remains responsible for deciding what actually executes.
 
+The delivery starts with a CLI and durable trace. The planned Desktop client reuses this React UI and connects to the same service. Its window can close while admitted work continues. A standalone browser client can use the same presentation later without becoming another runner.
+
 The example below uses the real `@xyflow/react` library. Drag nodes to explore layout, select an execution to inspect its trace, or step through the simulated events.
 
 <!-- playground -->
@@ -33,18 +35,18 @@ const node = {
 
 The `.mjs` workflow is the authoring source. The loader produces a validated graph description from its exported definition. React Flow reads that description. It does not parse arbitrary JavaScript to discover control flow.
 
-Store layout separately by stable ID. Moving nodes affects presentation only. The first version does not add execution edges or rewrite source files from the canvas. Arbitrary JavaScript cannot reliably round-trip through a visual editor.
+Store layout separately by workspace, workflow version, and stable node ID. Moving nodes affects presentation only. The first version does not add execution edges or rewrite source files from the canvas. Arbitrary JavaScript cannot reliably round-trip through a visual editor.
 
 For an active run, display its frozen graph and source version. A changed workflow file updates the definition preview and future runs without changing an existing run's graph.
 
 ## Project run events onto the graph
 
 ```text
-Runner → persisted event → HTTP event stream
-       → browser run snapshot → node.data.status
+Runner → persisted event → client event stream
+       → workspace and run snapshot → node.data.status
 ```
 
-An event such as `agent.started` updates the matching node. Selecting that node opens the related attempt and its trace. The browser reconnects from a durable cursor and current snapshot. Refreshing the page does not restart server-owned work.
+An event such as `agent.started` updates the matching node in the selected workspace and run. Selecting that node opens its attempt and trace. The client reconnects from a durable cursor and current snapshot. Refreshing the page or switching workspaces does not restart service-owned work.
 
 This website simulates that event stream locally. Replay changes view data only; there is no agent runner behind the preview.
 

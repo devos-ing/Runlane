@@ -6,6 +6,8 @@ Pi SDK execution and Pi durable persistence are planned integrations. This site 
 
 The agreed design uses `.mjs` workflow files to compose stages, configured agents, direct actions, and triggers. React Flow displays the validated graph and each run's trace. Execution changes happen in source files; canvas changes affect layout.
 
+The delivery starts with a CLI and foreground runner, then adds a daemon shared by all of the current user's workspaces. Desktop is the planned graphical client using the same React UI and service. A separate web product and a TUI remain later options. Read [CLI, daemon, and workspaces](content/cli-workspaces.md) for workspace identity, proposed commands, and lifecycle rules.
+
 Read [the glossary](CONTEXT.md), [workflow authoring](content/workflows.md), and [decisions and delivery](content/decisions.md) for the current design. The `@runlane/sdk` examples are proposed APIs, not an available package.
 
 Before planning development, read [Development scope](content/development-scope.md). It defines the goal, reason, approach, boundaries, and completion evidence for each work item. [AGENTS.md](AGENTS.md) points coding agents to the same rules.
@@ -41,7 +43,7 @@ Each page provides its Markdown source, heading anchors, and adjacent-page navig
 
 The graph supports layout exploration and node inspection. Connections are read-only. Replay advances local sample data only. The node selector also exposes every execution without requiring precise canvas interaction. On narrow screens, the initial view focuses on the Review group; pan, zoom, or choose an execution to explore the rest.
 
-The demo has no credentials, backend runner, Pi invocation, Pi durable database, or active schedule. Its event names and configuration snippets are proposed application contracts.
+The demo has no credentials, CLI, daemon, workspace registry, desktop shell, backend runner, Pi invocation, Pi durable database, or active schedule. Its event names and configuration snippets are proposed application contracts.
 
 ## Build and inspect
 

@@ -27,6 +27,8 @@ runlane/
 
 Register trusted roots explicitly in application configuration. Importing a `.mjs` file executes its JavaScript, including its imports. A trusted root controls what the application loads. It does not sandbox JavaScript or packages. Definition validation checks shape and policy; it does not make author code safe. Only load roots whose code and dependencies you trust.
 
+The CLI selects a registered Workspace before validation or execution. Workflow IDs are local to that workspace. The service attaches workspace ownership to the registration and run; reusable `.mjs` files do not hard-code a workspace ID. See [CLI, daemon, and workspaces](cli-workspaces.md).
+
 ## A complete review workflow
 
 ```js
@@ -114,11 +116,11 @@ Both trigger definitions belong to this workflow. The cron definition is disable
 
 ## Freeze executable inputs for restart
 
-At admission, resolve the workflow, trigger, inputs, agents, model profiles, action definitions, and policies into a run snapshot. The snapshot must identify the exact prompt and script contents and the dependency versions needed to resume the run. Record content hashes and retain an immutable source bundle or source revision, including the package lockfile. JSON configuration alone cannot restore executable files.
+At admission, resolve the workspace, workflow, trigger, inputs, agents, model profiles, action definitions, and policies into a run snapshot. Record workspace identity and the execution directory separately from the source root. The snapshot must identify the exact prompt and script contents and the dependency versions needed to resume the run. Record content hashes and retain an immutable source bundle or source revision, including the package lockfile. JSON configuration alone cannot restore executable files.
 
 Store definition data, file references, and version identifiers. Do not serialize JavaScript closures. A restart uses the recorded snapshot and must stop with a visible blocker if required source or dependency versions are unavailable. Source edits apply to future runs.
 
-The runtime defaults to two active runs and two concurrent model calls. Configure those application-wide limits explicitly. Eligible work waits in a visible queued state when either limit is full.
+The runtime defaults to two active runs and two concurrent model calls across all registered workspaces. Configure those service-wide limits explicitly. Eligible work waits in a visible queued state when either limit is full.
 
 ## Keep product concepts separate
 

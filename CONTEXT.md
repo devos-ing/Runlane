@@ -4,6 +4,13 @@ Runlane is a workflow automation and observability platform for agents. This glo
 
 ## Language
 
+**Workspace**:
+A registered context that groups workflow definitions, configuration, schedules, runs, and evidence under a stable identity and source root.
+_Avoid_: Repository or worktree as synonyms
+
+**Daemon**:
+The background form of the local Runlane service that manages the current user's registered workspaces and executions.
+
 **Workflow**:
 A versioned process containing stages, input requirements, outcome routes, triggers, and completion policy.
 
@@ -38,7 +45,7 @@ A declared repetition of work within one run, with a finite allowance for re-ent
 A command or event that requests a new workflow run.
 
 **Run**:
-One execution of a frozen workflow version with specific inputs and its own execution state.
+One execution of a frozen workflow version within a workspace, with specific inputs and its own execution state.
 _Avoid_: Session
 
 **Attempt**:

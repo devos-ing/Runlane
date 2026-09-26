@@ -14,6 +14,8 @@ Pi durable exposes durable record contracts and storage implementations for conv
 
 We still define run identity, attempt state, event ordering, loop counters, approval evidence, and which updates must commit together. A package with durable storage does not automatically implement those business rules.
 
+The user-owned service is the sole writer of application execution records for its state directory. It owns the workspace registry and records workspace identity on runs, schedules, events, and evidence. Pi durable does not provide our workspace registry, process ownership, or daemon lifecycle rules automatically.
+
 Pi remains authoritative for its conversation history. Avoid creating a second transcript store or a product-facing session manager.
 
 ## Reuse resources and tools

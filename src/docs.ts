@@ -28,8 +28,14 @@ const navigation = [
   {
     id: "concepts",
     title: "Core concepts",
-    description: "Workflows, stages, agents, actions, and runs.",
+    description: "Workspaces, workflows, stages, agents, actions, and runs.",
     group: "Start here",
+  },
+  {
+    id: "cli-workspaces",
+    title: "CLI, daemon & workspaces",
+    description: "One local service, workspace identity, and client lifecycle.",
+    group: "System design",
   },
   {
     id: "workflows",
