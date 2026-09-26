@@ -14,45 +14,45 @@ import { correctness, maintainability } from "../agents/reviewers.mjs";
 import { checkDependencies } from "../actions/check-dependencies.mjs";
 
 export const repairDemo = new Workflow({
-  id: "repair-demo",
-  version: 1,
-  entryStage: "implement",
-  loop: {
-    id: "repair",
-    entryStage: "implement",
-    maxReentries: 2,
-    onExhausted: "needs_input",
-  },
-  stages: [
-    {
-      id: "implement",
-      run: implementer,
-      next: "check",
-      on: { needs_input: { stop: "needs_input" } },
-    },
-    {
-      id: "check",
-      run: checkDependencies,
-      next: "review",
-      on: {
-        fail: { repeat: "repair" },
-        unknown: { stop: "needs_input" },
-      },
-    },
-    {
-      id: "review",
-      run: [
-        { id: "correctness", agent: correctness },
-        { id: "maintainability", agent: maintainability },
-      ],
-      completion: "all-approved",
-      on: {
-        approved: { complete: true },
-        changes_requested: { repeat: "repair" },
-        needs_input: { stop: "needs_input" },
-      },
-    },
-  ],
+	id: "repair-demo",
+	version: 1,
+	entryStage: "implement",
+	loop: {
+		id: "repair",
+		entryStage: "implement",
+		maxReentries: 2,
+		onExhausted: "needs_input",
+	},
+	stages: [
+		{
+			id: "implement",
+			run: implementer,
+			next: "check",
+			on: { needs_input: { stop: "needs_input" } },
+		},
+		{
+			id: "check",
+			run: checkDependencies,
+			next: "review",
+			on: {
+				fail: { repeat: "repair" },
+				unknown: { stop: "needs_input" },
+			},
+		},
+		{
+			id: "review",
+			run: [
+				{ id: "correctness", agent: correctness },
+				{ id: "maintainability", agent: maintainability },
+			],
+			completion: "all-approved",
+			on: {
+				approved: { complete: true },
+				changes_requested: { repeat: "repair" },
+				needs_input: { stop: "needs_input" },
+			},
+		},
+	],
 });
 ```
 

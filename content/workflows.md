@@ -38,67 +38,67 @@ import { correctness, maintainability } from "../agents/reviewers.mjs";
 import { checkDependencies } from "../actions/check-dependencies.mjs";
 
 export const changeReview = new Workflow({
-  id: "change-review",
-  version: 1,
-  inputs: {
-    task: { type: "string", required: true },
-    repository: { type: "string", required: true },
-  },
-  entryStage: "plan",
-  triggers: [
-    Trigger.manual({ id: "manual-change-review", version: 1 }),
-    Trigger.cron("0 9 * * 1-5", {
-      id: "weekday-dependency-audit",
-      version: 1,
-      timezone: "Asia/Hong_Kong",
-      inputs: { repository: "example/service", task: "Review dependency changes" },
-      overlapPolicy: "skip-unfinished",
-      offlinePolicy: "skip",
-      enabled: false,
-    }),
-  ],
-  loop: {
-    id: "repair",
-    entryStage: "implement",
-    maxReentries: 2,
-    onExhausted: "needs_input",
-  },
-  stages: [
-    {
-      id: "plan",
-      run: advisor,
-      next: "implement",
-      on: { needs_input: { stop: "needs_input" } },
-    },
-    {
-      id: "implement",
-      run: implementer,
-      next: "check",
-      on: { needs_input: { stop: "needs_input" } },
-    },
-    {
-      id: "check",
-      run: checkDependencies,
-      next: "review",
-      on: {
-        fail: { repeat: "repair" },
-        unknown: { stop: "needs_input" },
-      },
-    },
-    {
-      id: "review",
-      run: [
-        { id: "correctness", agent: correctness },
-        { id: "maintainability", agent: maintainability },
-      ],
-      completion: "all-approved",
-      on: {
-        approved: { complete: true },
-        changes_requested: { repeat: "repair" },
-        needs_input: { stop: "needs_input" },
-      },
-    },
-  ],
+	id: "change-review",
+	version: 1,
+	inputs: {
+		task: { type: "string", required: true },
+		repository: { type: "string", required: true },
+	},
+	entryStage: "plan",
+	triggers: [
+		Trigger.manual({ id: "manual-change-review", version: 1 }),
+		Trigger.cron("0 9 * * 1-5", {
+			id: "weekday-dependency-audit",
+			version: 1,
+			timezone: "Asia/Hong_Kong",
+			inputs: { repository: "example/service", task: "Review dependency changes" },
+			overlapPolicy: "skip-unfinished",
+			offlinePolicy: "skip",
+			enabled: false,
+		}),
+	],
+	loop: {
+		id: "repair",
+		entryStage: "implement",
+		maxReentries: 2,
+		onExhausted: "needs_input",
+	},
+	stages: [
+		{
+			id: "plan",
+			run: advisor,
+			next: "implement",
+			on: { needs_input: { stop: "needs_input" } },
+		},
+		{
+			id: "implement",
+			run: implementer,
+			next: "check",
+			on: { needs_input: { stop: "needs_input" } },
+		},
+		{
+			id: "check",
+			run: checkDependencies,
+			next: "review",
+			on: {
+				fail: { repeat: "repair" },
+				unknown: { stop: "needs_input" },
+			},
+		},
+		{
+			id: "review",
+			run: [
+				{ id: "correctness", agent: correctness },
+				{ id: "maintainability", agent: maintainability },
+			],
+			completion: "all-approved",
+			on: {
+				approved: { complete: true },
+				changes_requested: { repeat: "repair" },
+				needs_input: { stop: "needs_input" },
+			},
+		},
+	],
 });
 ```
 

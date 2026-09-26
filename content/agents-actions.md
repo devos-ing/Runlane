@@ -11,13 +11,13 @@ The `@runlane/sdk` API below is a proposal. No SDK loader, agent runner, or scri
 import { Agent } from "@runlane/sdk";
 
 export const advisor = new Agent({
-  id: "advisor",
-  instructions: { file: new URL("../prompts/advisor.md", import.meta.url) },
-  input: { contract: "task-context-v1" },
-  modelProfile: "planning-model",
-  reasoning: "high",
-  actions: ["files.read", "files.search"],
-  result: { contract: "plan-v1", outcomes: ["ready", "needs_input"] },
+	id: "advisor",
+	instructions: { file: new URL("../prompts/advisor.md", import.meta.url) },
+	input: { contract: "task-context-v1" },
+	modelProfile: "planning-model",
+	reasoning: "high",
+	actions: ["files.read", "files.search"],
+	result: { contract: "plan-v1", outcomes: ["ready", "needs_input"] },
 });
 ```
 
@@ -36,26 +36,26 @@ Parallel reviewers can use separate explicit model profiles:
 import { Agent } from "@runlane/sdk";
 
 const reviewerSettings = {
-  instructions: { file: new URL("../prompts/reviewer.md", import.meta.url) },
-  input: { contract: "candidate-review-v1" },
-  reasoning: "high",
-  actions: ["files.read", "files.search"],
-  result: {
-    contract: "review-v1",
-    outcomes: ["approved", "changes_requested", "needs_input"],
-  },
+	instructions: { file: new URL("../prompts/reviewer.md", import.meta.url) },
+	input: { contract: "candidate-review-v1" },
+	reasoning: "high",
+	actions: ["files.read", "files.search"],
+	result: {
+		contract: "review-v1",
+		outcomes: ["approved", "changes_requested", "needs_input"],
+	},
 };
 
 export const correctness = new Agent({
-  ...reviewerSettings,
-  id: "correctness-reviewer",
-  modelProfile: "review-model-a",
+	...reviewerSettings,
+	id: "correctness-reviewer",
+	modelProfile: "review-model-a",
 });
 
 export const maintainability = new Agent({
-  ...reviewerSettings,
-  id: "maintainability-reviewer",
-  modelProfile: "review-model-b",
+	...reviewerSettings,
+	id: "maintainability-reviewer",
+	modelProfile: "review-model-b",
 });
 ```
 
@@ -68,12 +68,12 @@ An action can be a trusted built-in capability, a script, or an application-owne
 import { ScriptAction } from "@runlane/sdk";
 
 export const checkDependencies = new ScriptAction({
-  id: "dependency-check",
-  executable: "bun",
-  scriptFile: new URL("../scripts/check-dependencies.mjs", import.meta.url),
-  args: [],
-  timeoutMs: 60_000,
-  result: { contract: "check-v1", outcomes: ["pass", "fail", "unknown"] },
+	id: "dependency-check",
+	executable: "bun",
+	scriptFile: new URL("../scripts/check-dependencies.mjs", import.meta.url),
+	args: [],
+	timeoutMs: 60_000,
+	result: { contract: "check-v1", outcomes: ["pass", "fail", "unknown"] },
 });
 ```
 

@@ -11,19 +11,19 @@ The `@runlane/sdk` examples are proposed definitions, not working scheduler code
 import { Trigger } from "@runlane/sdk";
 
 export const triggers = [
-  Trigger.manual({
-  id: "manual-change-review",
-  version: 1,
-  }),
-  Trigger.cron("0 9 * * 1-5", {
-  id: "weekday-dependency-audit",
-  version: 1,
-  timezone: "Asia/Hong_Kong",
-  inputs: { repository: "example/service", task: "Review dependency changes" },
-  overlapPolicy: "skip-unfinished",
-  offlinePolicy: "skip",
-  enabled: false,
-  }),
+	Trigger.manual({
+		id: "manual-change-review",
+		version: 1,
+	}),
+	Trigger.cron("0 9 * * 1-5", {
+		id: "weekday-dependency-audit",
+		version: 1,
+		timezone: "Asia/Hong_Kong",
+		inputs: { repository: "example/service", task: "Review dependency changes" },
+		overlapPolicy: "skip-unfinished",
+		offlinePolicy: "skip",
+		enabled: false,
+	}),
 ];
 ```
 
@@ -37,7 +37,7 @@ The proposed trigger IDs are unique within a registered project. Check overlap a
 
 ## Admit each occurrence once
 
-Identify a cron occurrence by trigger ID, trigger version, and scheduled UTC instant. Persist the occurrence and its admission decision atomically with any queued run. If delivery repeats, return the existing occurrence instead of creating a second run.
+Within the registered project, identify a cron occurrence by trigger ID, trigger version, and scheduled UTC instant. Persist the occurrence and its admission decision atomically with any queued run. If delivery repeats, return the existing occurrence instead of creating a second run.
 
 `overlapPolicy: "skip-unfinished"` skips an occurrence while the previous run from that trigger remains nonterminal, including when it waits for user input. `offlinePolicy: "skip"` discards occurrences that pass while the scheduler is offline. The scheduler does not catch up missed times or wake a sleeping computer.
 
