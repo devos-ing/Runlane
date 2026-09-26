@@ -1,7 +1,7 @@
+import { Database } from "bun:sqlite";
 import { randomBytes, randomUUID } from "node:crypto";
 import { mkdir, realpath, stat, unlink, writeFile } from "node:fs/promises";
 import { basename, isAbsolute, join } from "node:path";
-import lockfile from "proper-lockfile";
 import { availableModel, executeAgent, ModelRuntime } from "./agent.ts";
 import { loadDefinition, validateValue } from "./definitions.ts";
 import { appendEvent, RunStore } from "./store.ts";
@@ -21,6 +21,34 @@ export type ServiceAddress = {
   pid: number;
   version: 1;
 };
+
+/** Holds an OS-backed SQLite write lock until the owning service exits or releases it. */
+function acquireOwner(stateDir: string): () => Promise<void> {
+  let owner: Database | undefined;
+  try {
+    owner = new Database(join(stateDir, "owner.sqlite"), { create: true });
+    owner.exec("PRAGMA busy_timeout=0; BEGIN EXCLUSIVE;");
+  } catch (error) {
+    owner?.close();
+    const busy = (error as { code?: string }).code === "SQLITE_BUSY";
+    throw new RunlaneError(
+      busy ? "SERVICE_ALREADY_RUNNING" : "STATE_LOCK_FAILED",
+      busy
+        ? "Another service owns this state directory."
+        : "The service could not acquire its state directory.",
+      busy ? 409 : 500,
+    );
+  }
+  const held = owner;
+  /** Releases ownership even when SQLite cannot explicitly roll back the lock transaction. */
+  return async () => {
+    try {
+      held.exec("ROLLBACK");
+    } finally {
+      held.close();
+    }
+  };
+}
 
 /** Removes an existing service descriptor without hiding other filesystem failures. */
 async function removeDescriptor(path: string): Promise<void> {
@@ -86,27 +114,9 @@ export class RunlaneService {
         "STATE_PERMISSIONS",
         "The state directory must be owned by you with mode 0700.",
       );
-    let compromised = false;
     let service: RunlaneService | undefined;
     /** Releases the process lock after durable storage has closed. */
-    let release: () => Promise<void>;
-    try {
-      release = await lockfile.lock(stateDir, {
-        stale: 5000,
-        update: 1000,
-        retries: 0,
-        onCompromised: () => {
-          compromised = true;
-          if (service) void service.close();
-        },
-      });
-    } catch {
-      throw new RunlaneError(
-        "SERVICE_ALREADY_RUNNING",
-        "Another service owns this state directory, or a crashed owner's lock has not expired yet.",
-        409,
-      );
-    }
+    const release = acquireOwner(stateDir);
     let store: RunStore | undefined;
     try {
       store = await RunStore.open(join(stateDir, "runs.sqlite"));
@@ -115,12 +125,6 @@ export class RunlaneService {
         modelsPath: null,
         allowModelNetwork: false,
       });
-      if (compromised)
-        throw new RunlaneError(
-          "STATE_LOCK_LOST",
-          "The service lost ownership of its state directory.",
-          500,
-        );
       service = new RunlaneService(stateDir, store, models, release, maxCalls);
       service.server = Bun.serve({
         hostname: "127.0.0.1",
@@ -136,8 +140,11 @@ export class RunlaneService {
       return service;
     } catch (error) {
       if (service?.server) service.server.stop(true);
-      if (store) await store.close();
-      await release();
+      try {
+        if (store) await store.close();
+      } finally {
+        await release();
+      }
       throw error;
     }
   }
@@ -340,8 +347,14 @@ export class RunlaneService {
           process.stderr.write(
             "Runlane could not persist execution state; stopping the service.\n",
           );
+          this.stopping = true;
           queueMicrotask(() => {
-            void this.close();
+            void this.close().catch(() => {
+              process.stderr.write(
+                "Runlane stopped after a storage failure; inspect recorded state before continuing.\n",
+              );
+              process.exitCode = 1;
+            });
           });
         })
         .finally(() => {
@@ -449,13 +462,31 @@ export class RunlaneService {
     await Promise.allSettled(
       [...this.jobs.values()].map((job) => job.finished),
     );
-    for (const run of this.store.runs().filter((run) => active(run.status))) {
-      await this.store.updateRun(run.id, (current) =>
-        this.markAbort(current, "service_stopping"),
-      );
+    let failure: unknown;
+    try {
+      for (const run of this.store.runs().filter((run) => active(run.status))) {
+        await this.store.updateRun(run.id, (current) =>
+          this.markAbort(current, "service_stopping"),
+        );
+      }
+    } catch (error) {
+      failure = error;
     }
-    await this.store.close();
-    await removeDescriptor(join(this.stateDir, "service.json"));
-    await this.release();
+    try {
+      await this.store.close();
+    } catch (error) {
+      failure ??= error;
+    }
+    try {
+      await removeDescriptor(join(this.stateDir, "service.json"));
+    } catch (error) {
+      failure ??= error;
+    }
+    try {
+      await this.release();
+    } catch (error) {
+      failure ??= error;
+    }
+    if (failure) throw failure;
   }
 }

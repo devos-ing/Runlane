@@ -92,6 +92,18 @@ export async function executeAgent(
   let overflow = false;
   let providerFailed = false;
   let usage: JsonObject = {};
+  /** Preserves Pi's configured provider implementation while binding the host cancellation signal. */
+  const stream = session.agent.streamFunction;
+  session.agent.streamFunction = (selectedModel, context, options) => {
+    signal.throwIfAborted();
+    return stream(selectedModel, context, {
+      ...options,
+      signal: AbortSignal.any([
+        signal,
+        ...(options?.signal ? [options.signal] : []),
+      ]),
+    });
+  };
   /** Stops Pi's current operation without exposing upstream exception details. */
   const abort = () => {
     void session.abort().catch(() => {});
@@ -138,6 +150,8 @@ export async function executeAgent(
       model: session.model.id,
       reasoning: session.thinkingLevel,
     });
+    if (signal.aborted)
+      throw new RunlaneError("ABORTED", "The invocation was interrupted.");
     await session.prompt(
       `Process this workflow input:\n${JSON.stringify(run.input)}`,
     );

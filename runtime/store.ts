@@ -52,8 +52,11 @@ function database(path: string): SqliteDatabase {
     },
     /** Flushes the WAL and releases the database handle. */
     close() {
-      db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
-      db.close();
+      try {
+        db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+      } finally {
+        db.close();
+      }
     },
   };
 }

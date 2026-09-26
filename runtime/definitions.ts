@@ -14,8 +14,16 @@ import {
   type Workspace,
 } from "./types.ts";
 
-const ajv = new Ajv({ strict: true, allErrors: false, ownProperties: true });
 const efforts = new Set(["off", "minimal", "low", "medium", "high", "xhigh"]);
+
+/** Compiles one definition without a process-global schema-ID registry or cache. */
+function validator(value: Record<string, unknown>) {
+  return new Ajv({
+    strict: true,
+    allErrors: false,
+    ownProperties: true,
+  }).compile(value);
+}
 
 /** Rejects fields the execution proof cannot honor instead of ignoring them. */
 function fields(
@@ -125,7 +133,7 @@ export function schema(value: unknown, label: string): JsonObject {
       `${label} must be a synchronous object schema.`,
     );
   try {
-    ajv.compile(candidate);
+    validator(candidate);
   } catch {
     throw new RunlaneError(
       "INVALID_SCHEMA",
@@ -141,7 +149,7 @@ export function validateValue(
   value: unknown,
   label: string,
 ): void {
-  if (!ajv.compile(definition)(value))
+  if (!validator(definition)(value))
     throw new RunlaneError(
       "SCHEMA_MISMATCH",
       `${label} does not match its declared schema.`,
