@@ -57,6 +57,8 @@ Decision sources own their rules and return final outcomes with evidence. The ru
 
 ## Read with your teammate
 
+Use [Architecture review](architecture-map.md) to inspect the whole system, Runtime parent and subclasses, and the bounded parallel-review loop before implementation.
+
 Start with [Core concepts](concepts.md), [Runtime parent class](runtimes.md), and [CLI, daemon, and workspaces](cli-workspaces.md), then explore [How React Flow works](react-flow.md). Use [Decisions and delivery](decisions.md) to distinguish agreed direction from open implementation choices.
 
 For the reference interaction, GitHub documents an execution graph whose nodes expose job status and logs: [GitHub Actions visualization](https://docs.github.com/en/actions/how-tos/monitor-workflows/use-the-visualization-graph).

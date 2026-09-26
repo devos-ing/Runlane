@@ -32,6 +32,12 @@ const navigation = [
     group: "Start here",
   },
   {
+    id: "architecture-map",
+    title: "Architecture review",
+    description: "System map, Runtime inheritance, and the real repair loop.",
+    group: "Start here",
+  },
+  {
     id: "cli-quickstart",
     title: "Submit a task",
     description: "Run the CLI proof with real Pi execution and durable trace.",

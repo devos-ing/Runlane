@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Runlane \u00b7 Plan, implement, review",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "viewBox": [
+      720,
+      342
+    ],
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "backend": {
+          "label": "Execution logic"
+        },
+        "security": {
+          "label": "Workflow stop"
+        },
+        "database": {
+          "label": "Saved result"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Task input \u2192 plan \u2192 candidate \u2192 checks \u00b7 planned"
+    },
+    {
+      "id": "review",
+      "label": "Review and repair \u00b7 same run"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "plan",
+      "lane": "work",
+      "col": 0,
+      "type": "backend",
+      "label": "Plan",
+      "sublabel": "Submitted task input"
+    },
+    {
+      "id": "implement",
+      "lane": "work",
+      "col": 2,
+      "type": "backend",
+      "label": "Implement",
+      "sublabel": "New candidate"
+    },
+    {
+      "id": "checks",
+      "lane": "work",
+      "col": 4,
+      "type": "backend",
+      "label": "Script checks",
+      "sublabel": ".mjs / .sh Action"
+    },
+    {
+      "id": "complete",
+      "lane": "work",
+      "col": 5,
+      "type": "database",
+      "label": "Complete",
+      "sublabel": "Commit result"
+    },
+    {
+      "id": "needs-input",
+      "lane": "review",
+      "col": 0,
+      "type": "security",
+      "label": "Needs input",
+      "sublabel": "Stop automatic work"
+    },
+    {
+      "id": "repair-budget",
+      "lane": "review",
+      "col": 2,
+      "type": "backend",
+      "label": "Repair budget",
+      "sublabel": "Two repairs total"
+    },
+    {
+      "id": "parallel-review",
+      "lane": "review",
+      "col": 4,
+      "type": "backend",
+      "label": "Parallel Review",
+      "sublabel": "Reviewer A + B",
+      "tag": "WAIT FOR BOTH",
+      "width": 110
+    }
+  ],
+  "edges": [
+    {
+      "id": "plan-ready",
+      "from": "plan",
+      "to": "implement",
+      "label": "ready",
+      "role": "main"
+    },
+    {
+      "id": "candidate-check",
+      "from": "implement",
+      "to": "checks",
+      "role": "main"
+    },
+    {
+      "id": "checks-review",
+      "from": "checks",
+      "to": "parallel-review",
+      "label": "pass",
+      "role": "main",
+      "labelDx": 32
+    },
+    {
+      "id": "review-approved",
+      "from": "parallel-review",
+      "to": "complete",
+      "label": "all approved",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "id": "checks-repair",
+      "from": "checks",
+      "to": "repair-budget",
+      "label": "valid fail",
+      "role": "branch",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "right",
+      "via": [
+        [
+          500,
+          185
+        ],
+        [
+          365,
+          185
+        ],
+        [
+          365,
+          243
+        ]
+      ]
+    },
+    {
+      "id": "review-repair",
+      "from": "parallel-review",
+      "to": "repair-budget",
+      "label": "changes requested",
+      "role": "branch",
+      "variant": "dashed",
+      "labelDy": 40
+    },
+    {
+      "id": "repair-loop",
+      "from": "repair-budget",
+      "to": "implement",
+      "label": "allowance remains",
+      "role": "return",
+      "variant": "emphasis"
+    },
+    {
+      "id": "repair-exhausted",
+      "from": "repair-budget",
+      "to": "needs-input",
+      "label": "exhausted",
+      "role": "error",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Two kinds of parallel work",
+      "items": [
+        "Reviewer A and B run independently against one immutable candidate.",
+        "Separate workflow runs can also execute across different workspaces."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "The loop really returns",
+      "items": [
+        "Checks and review share two repairs after the initial implementation.",
+        "Each repair reruns checks and every reviewer. Persist the counter before dispatch."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Failure is not rejection",
+      "items": [
+        "Malformed results and execution errors stop advancement; they do not enter repair automatically.",
+        "Valid needs_input from a step or an exhausted budget stops automatic work."
+      ]
+    }
+  ]
+}

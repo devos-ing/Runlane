@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Runlane \u00b7 System architecture",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "workspace",
+      "type": "backend",
+      "label": "Workspace",
+      "sublabel": "Identity and source root",
+      "tag": "IMPLEMENTED",
+      "pos": [
+        25,
+        34
+      ],
+      "size": [
+        118,
+        51
+      ]
+    },
+    {
+      "id": "definitions",
+      "type": "external",
+      "label": "Trusted .mjs files",
+      "sublabel": "Workflow, Agent, Profile",
+      "tag": "PLAIN DATA",
+      "pos": [
+        220,
+        34
+      ],
+      "size": [
+        133,
+        51
+      ]
+    },
+    {
+      "id": "cli",
+      "type": "frontend",
+      "label": "CLI",
+      "sublabel": "Submit, inspect, cancel",
+      "tag": "IMPLEMENTED",
+      "pos": [
+        25,
+        183
+      ],
+      "size": [
+        118,
+        51
+      ]
+    },
+    {
+      "id": "loader",
+      "type": "backend",
+      "label": "Definition loader",
+      "sublabel": "Validate and freeze inputs",
+      "tag": "PI SUBSET TODAY",
+      "pos": [
+        220,
+        183
+      ],
+      "size": [
+        133,
+        51
+      ]
+    },
+    {
+      "id": "runner",
+      "type": "backend",
+      "label": "Workflow Runner",
+      "sublabel": "Schedule, validate, route",
+      "tag": "SINGLE STEP TODAY",
+      "pos": [
+        443,
+        183
+      ],
+      "size": [
+        146,
+        51
+      ]
+    },
+    {
+      "id": "runtime",
+      "type": "backend",
+      "label": "Runtime subclasses",
+      "sublabel": "Pi, then Codex and Claude",
+      "tag": "EXTRACTION PLANNED",
+      "pos": [
+        682,
+        93
+      ],
+      "size": [
+        146,
+        51
+      ]
+    },
+    {
+      "id": "actions",
+      "type": "backend",
+      "label": "Direct Actions",
+      "sublabel": ".mjs / .sh checks; later Jev",
+      "tag": "PLANNED",
+      "pos": [
+        682,
+        288
+      ],
+      "size": [
+        146,
+        51
+      ]
+    },
+    {
+      "id": "trigger",
+      "type": "external",
+      "label": "Trigger",
+      "sublabel": "Manual now; cron later",
+      "tag": "STARTS A NEW RUN",
+      "pos": [
+        25,
+        356
+      ],
+      "size": [
+        118,
+        51
+      ]
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Pi durable + SQLite",
+      "sublabel": "Run, results, trace, routes",
+      "tag": "IMPLEMENTED SUBSET",
+      "pos": [
+        443,
+        412
+      ],
+      "size": [
+        146,
+        51
+      ]
+    },
+    {
+      "id": "observer",
+      "type": "frontend",
+      "label": "React Flow + trace",
+      "sublabel": "Same records as CLI logs",
+      "tag": "LIVE LINK PLANNED",
+      "pos": [
+        220,
+        412
+      ],
+      "size": [
+        146,
+        51
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "workspace-definitions",
+      "from": "workspace",
+      "to": "definitions",
+      "label": "source root"
+    },
+    {
+      "id": "definitions-loader",
+      "from": "definitions",
+      "to": "loader",
+      "label": "load",
+      "labelDy": 43
+    },
+    {
+      "id": "cli-submit",
+      "from": "cli",
+      "to": "loader",
+      "label": "task input",
+      "variant": "emphasis"
+    },
+    {
+      "id": "admit-run",
+      "from": "loader",
+      "to": "runner",
+      "label": "frozen run",
+      "variant": "emphasis"
+    },
+    {
+      "id": "invoke-agent",
+      "from": "runner",
+      "to": "runtime",
+      "label": "Agent + Profile",
+      "variant": "emphasis"
+    },
+    {
+      "id": "invoke-action",
+      "from": "runner",
+      "to": "actions",
+      "label": "Action step"
+    },
+    {
+      "id": "manual-trigger",
+      "from": "trigger",
+      "to": "cli",
+      "label": "manual start"
+    },
+    {
+      "id": "commit-checkpoint",
+      "from": "runner",
+      "to": "store",
+      "label": "atomic checkpoint",
+      "variant": "emphasis",
+      "labelDy": 62
+    },
+    {
+      "id": "observe-records",
+      "from": "store",
+      "to": "observer",
+      "label": "read events",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "One local owner",
+      "items": [
+        "The service owns loading, scheduling, execution, and records across every workspace.",
+        "Foreground service exists. Background daemon management is planned."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Execution reports back",
+      "items": [
+        "Runtimes and Actions return output and observable events to the Runner.",
+        "Only the Runner validates outcomes and commits the next route."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Current product boundary",
+      "items": [
+        "A real tool-free Pi invocation and durable CLI history work today.",
+        "Multi-step execution, Runtime classes, live graph, and Desktop are planned."
+      ]
+    }
+  ]
+}
