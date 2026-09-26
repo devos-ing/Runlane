@@ -20,9 +20,9 @@ Development needs the same discipline. Adding a new agent should not produce ano
 
 The agreed design uses trusted `.mjs` definitions, a validated graph, and a retained source version for each run. One service for the current operating-system user manages registered workspaces. Its runner owns execution state, outcome routing, shared capacity, and bounded repetition. Pi executes agents. Pi durable is the selected persistence foundation, pending compatibility and transaction evidence.
 
-Delivery starts with a CLI and foreground service, then adds daemon lifecycle and multiple workspaces. Durable trace is part of the first invocation path. The planned Desktop client reuses the React and React Flow UI through the same operations and events. A separate web product and a TUI remain later options. See [CLI, daemon, and workspaces](cli-workspaces.md).
+Delivery starts with a CLI and foreground service. Prove one invocation, then add the real review loop and connect the existing React Flow view to its records. The first usable milestone includes independent runs across workspaces and parallel reviewers under shared limits. Background launch management, Jev, desktop packaging, and cron follow it. A separate web product and a TUI remain later options. See [Decisions and delivery](decisions.md).
 
-Contributors reuse Agent configurations and Action implementations. Keep the shared execution contract small, and keep mutable state on attempts and runs. Extend a module when a current requirement needs new behavior. A hypothetical future consumer does not justify a new framework or package.
+Contributors reuse plain Agent and Action configurations and imported result schemas. Keep the execution interface small and mutable state on attempts and runs. A shared type does not require a base class. Extend a module when current implementations need shared behavior; a hypothetical consumer does not justify a new framework or package.
 
 ## Product boundaries
 
@@ -31,9 +31,9 @@ Contributors reuse Agent configurations and Action implementations. Keep the sha
 | Workspaces | Stable registration, source roots, and ownership of workflows and execution records. | A workspace need not be a Git repository and is not a process sandbox. Shared definitions do not share run state. |
 | Workflow authoring | Stages, configured agents, scripts, triggers, and typed routes. | `.mjs` remains authoritative. Canvas layout changes do not rewrite execution logic. |
 | Orchestration | Admission, attempts, result validation, routing, cancellation, and recovery. | Reuse Pi's agent loop and conversation internals. Keep session management below the product. |
-| Decisions | Replaceable rule, script, Advisor, and Jev sources with a shared accepted-outcome contract. | Keep destinations explicit, model calls within shared capacity, and decision evidence durable. A new source does not create another execution engine. |
+| Decisions | Replaceable sources that return a schema-validated final outcome and evidence. | Keep confidence rules inside the relevant Action, destinations explicit, and model calls within shared capacity. No generic DecisionPolicy engine. |
 | Observability | Run history, graph state, trace events, and evidence references. | Show observable execution. Simulated events never prove a live integration. |
-| Persistence | Run identity, ordering, loop counters, and atomic transitions. | Use Pi durable where verified. Avoid a second authoritative conversation store. |
+| Persistence | Run identity, ordering, loop counters, controlled source references, and atomic transitions. | Verify Pi durable first. Block unsupported recovery rather than building a general environment restorer or another conversation store. |
 | Extensions | Agent definitions, prompts, scripts, and declared capabilities. | Load explicitly trusted sources. Validation and working directories are not sandboxes. |
 | Coding workflows | Optional Ticket input, candidate checks, worktrees, review, and publication actions. | Keep those requirements in the coding template, outside the general workflow core. |
 | Deployment | One user-owned local service, foreground and daemon launch modes, and CLI and graphical clients. | Hosted runners, distributed scheduling, tenant management, and a plugin marketplace are outside current scope. Automatic OS service installation is deferred. |
@@ -58,7 +58,7 @@ Use one scope record in the existing ticket, plan, or PR. Do not create another 
 
 Planning, implementation, and review use this same record. Planning identifies the change and its evidence. Implementation follows that boundary. Review checks the result against the stated outcome and preserved invariants. A useful adjacent improvement can become a separate proposal without delaying completion of the current work.
 
-## Example for the first runtime slice
+## Example for slice A, the execution proof
 
 | Field | Runner proof |
 | --- | --- |
@@ -72,7 +72,11 @@ Planning, implementation, and review use this same record. Planning identifies t
 | Done | A real result appears in the workspace's recorded run and trace. Invalid input or an unavailable model cannot appear as success. Client reconnection preserves run identity. Service interruption does not silently duplicate work. |
 | Stop or revisit | Pi durable cannot meet the required atomic transition, the selected Pi version fails the required lifecycle, or source retention requires capabilities outside this slice. Record the evidence and resolve the affected design choice. |
 
-This is the next planned runtime slice, not an instruction to implement it during every task. The current repository implements the documentation site and simulated graph. A planned capability becomes implementation work only when the current task includes it.
+Slice A is the next integration proof, not completion of the product milestone. Slices B and C add the bounded workflow and live graph. Their acceptance evidence must cover a real check and review result, a repair round, a visible failure, both forms of parallelism, shared capacity, and preservation of committed state on reconnect or restart.
+
+Use the existing graph for that evidence before adding Jev or desktop packaging. Source retention starts with a controlled set of known files and a verified dependency environment. Unsupported or missing inputs block the run. These boundaries keep the milestone small without dropping validation, recovery, or the user's required parallel behavior.
+
+This plan is not an instruction to implement the runtime during every task. The current repository implements the documentation site and simulated graph. A planned capability becomes implementation work only when the current task includes it.
 
 ## Completion and scope changes
 

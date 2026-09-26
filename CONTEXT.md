@@ -38,8 +38,8 @@ A capability executed directly by a stage or made available to an Agent, such as
 A structured result used to choose a declared workflow path, with any evidence required by its result contract.
 _Avoid_: A separate agent type or execution engine
 
-**Decision policy**:
-A declared rule that accepts a proposed decision or maps it to another allowed outcome, such as a request for input.
+**Result schema**:
+The definition of an execution result's shape and allowed outcomes, shared by its producer and consumers.
 
 **Route**:
 A rule that maps an accepted, validated stage outcome to another stage, a declared loop, completion, or stopped execution.

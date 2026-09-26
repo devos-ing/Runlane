@@ -28,14 +28,16 @@ Runlane also owns the `.mjs` definition loader and retention of each run's sourc
 
 ## Add decision models through an Action adapter
 
-Jev is a planned decision source alongside scripts and Advisor Agents. Its Action adapter uses the provider's decision interface and normalizes the response into Runlane's result contract. Do not assume that a decision-model endpoint accepts Pi's conversational or tool-loop protocol.
+Jev is a later decision source, after the real workflow and live graph. Its Action adapter uses the provider's decision interface, applies its own confidence rules, and returns the final result with evidence. Do not assume that a decision-model endpoint accepts Pi's conversational or tool-loop protocol.
 
 Keep ordinary Agent execution in Pi. The Jev path shares attempt records, the global model-call limit, timeout and cancellation handling, reported usage, and durable decision evidence. It does not create a second agent runtime. Model profiles select an explicit provider and version, and the adapter validates the capabilities it requires.
 
-Runlane validates the normalized result, applies any frozen decision policy, and commits its selected route. A policy may convert valid uncertainty into a declared outcome. Provider failures remain failures. The [routing design](routing-loops.md) defines those rules. Jev integration has not been implemented or verified in this repository.
+The runner validates the final result against its imported schema and commits the declared route. It has no generic confidence-policy module. A Jev Action can convert valid uncertainty to `needs_input`; provider failures remain failures. The [routing design](routing-loops.md) defines that interface. Jev integration has not been implemented or verified in this repository.
 
 ## Prove the integration first
 
 Pin a published package version and inspect its declarations. Verify explicit models, event delivery, independent invocations, cancellation, clean shutdown, durable record mapping, and transaction behavior before relying on them.
+
+Keep this proof bounded to one invocation and the records needed to preserve its result and transition. Retain a known source set and verify the existing dependency environment. Do not expand a compatibility problem into another persistence abstraction, a general bundler, or automatic environment reconstruction without concrete need.
 
 An earlier Pied Piper integration recorded a Bun/macOS shutdown issue with Pi 0.82.1's SDK entry point. Treat that as a version-specific investigation lead, not a claim that the current SDK is incompatible. No live Pi or Pi durable integration has been executed by this documentation project.

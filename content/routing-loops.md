@@ -1,28 +1,25 @@
 # Route outcomes and bound repetition
 
-A stage's `next` field names the next stage for its validated success outcome. Its `on` map routes named outcomes from the result contract. Reject a definition that routes the same outcome through both `next` and `on`.
+The runner accepts a validated result, looks up its `outcome` in the stage's `on` map, and commits the declared transition. Decision sources can change without adding another policy engine to the runner.
 
-The decision source is replaceable. The mapping from an accepted outcome to a declared destination stays explicit. Rules, scripts, an Advisor, and Jev can supply decisions without changing the runner's transition rules.
+These definitions describe the proposed design. No runtime, public SDK, or Jev adapter is implemented in this repository.
 
-These examples use the proposed `@runlane/sdk` API. The SDK and runner are not implemented.
+## Keep the decision inside its source
 
-## Reuse Agent and Action for decisions
-
-A decision is a use of an execution result, not a new executor or parent class. A stage can run an existing Agent or Action and route its result.
-
-| Decision source | Execution path |
+| Source | Responsibility |
 | --- | --- |
-| Existing named outcome | Map the stage's validated result directly through `on` or `next`. No additional call is needed. |
-| Rules or expressions | Use a deterministic Action over declared inputs. The first implementation can use the shared ScriptAction path. |
-| Custom script | Run a ScriptAction with its normal input, result contract, timeout, and trace. |
-| Advisor | Run an Agent through Pi and validate its structured result. |
-| Jev | Run an Action through a decision-model adapter, with an explicit model profile and normal attempt records. |
+| Existing stage output | Return the result already needed by the workflow. No extra decision call is required. |
+| ScriptAction | Use ordinary conditions or an expression library over declared inputs. Return the final outcome. |
+| Advisor Agent | Produce a result through Pi using the same input and result schemas as other sources. |
+| Jev Action, later | Normalize the provider response, apply its own confidence rules, and return the final outcome and evidence. |
 
-Keep file reads, API calls, and model requests inside visible execution steps. An edge's condition must not hide those operations. Contributors can change the imported decision implementation when its input and result contracts remain compatible. A separate expression-language engine or plugin framework is not required for the first version.
+The runner owns schema validation, destination checks, capacity, cancellation, and durable transitions. It does not understand model confidence or maintain a generic DecisionPolicy definition. Shared execution types are sufficient; these sources do not need another inheritance hierarchy.
 
-## Declare every possible destination
+Keep file access and model requests inside visible Agents or Actions. An edge must not hide those operations. A separate expression engine is unnecessary until a real workflow needs one.
 
-This stage fragment assumes that the containing workflow declares `research` and `implement`. `choosePath` is an imported Agent or Action that accepts the request context and returns `research`, `implement`, or `needs_input`.
+## Declare every destination
+
+This stage fragment assumes that the containing workflow declares `research` and `implement`. The imported result schema for `choosePath` defines the allowed outcomes once.
 
 ```js
 {
@@ -36,13 +33,15 @@ This stage fragment assumes that the containing workflow declares `research` and
 }
 ```
 
-The result contract declares the complete outcome set. Definition validation requires a destination for every accepted outcome and rejects unknown stage IDs. A decision cannot introduce a stage, change permissions, bypass designated reviewers, or reset a loop allowance. React Flow can draw every candidate edge before execution.
+Definition validation checks that `on` covers every schema outcome and that every destination exists. The first format uses this one transition map; `next` shorthand is deferred. A result cannot introduce a stage, change permissions, bypass required review, or reset the loop counter.
 
-## Preserve proposed and accepted decisions
+Each route has exactly one destination: `to`, `repeat`, `stop`, or `complete`. `stop: "needs_input"` suspends execution and leaves the run unfinished. `complete: true` completes the workflow.
 
-The decision source returns a result with a named outcome and contract-defined data. For Jev, the adapter retains the provider response and normalizes the proposed choice into Runlane's contract. Jev Choice returns `choice`, `probabilities`, and `confidence`. [TypeSafe Choice reference](https://docs.typesafe.ai/primitives/choice)
+## Preserve decision evidence
 
-A deterministic decision policy may accept that choice or produce a declared `needs_input` outcome. For example, a choice can fail a configured confidence threshold. The accepted result then preserves both the proposal and the effective outcome:
+A later Jev Action can use Choice, which returns a selected option, probabilities, and confidence. Those provider fields are normalized inside the Action. [TypeSafe Choice reference](https://docs.typesafe.ai/primitives/choice)
+
+The Action may map a valid but uncertain choice to `needs_input`. Its result preserves the proposal and the reason without asking the runner to apply another rule:
 
 ```json
 {
@@ -50,115 +49,56 @@ A deterministic decision policy may accept that choice or produce a declared `ne
 	"data": {
 		"proposedChoice": "implement",
 		"confidence": 0.42,
-		"policyReason": "below-confidence-threshold"
+		"reason": "below-confidence-threshold"
 	}
 }
 ```
 
-The provider adapter normalizes its response. The shared result path validates that response, applies the configured policy, and validates the accepted outcome before routing. Preserve the raw response as bounded evidence. Never turn an unsupported option or malformed response into an ordinary low-confidence result.
+Retain the Action's code version, declared settings, and bounded provider response with the attempt. Confidence thresholds are specific to that Action and task; confidence is not a correctness guarantee. [TypeSafe confidence reference](https://docs.typesafe.ai/confidence)
 
-Freeze the policy with the workflow source version. It declares any required confidence field, threshold, and low-confidence outcome. A missing or invalid required field blocks evaluation. Deterministic scripts do not need invented confidence values. Confidence is not a guarantee of correctness, and thresholds depend on the task. [TypeSafe confidence reference](https://docs.typesafe.ai/confidence)
+Invalid required fields, unsupported choices, provider errors, and timeouts are execution failures. They must not become ordinary uncertainty or an approval. A source with no confidence measurement does not invent one. The shared runner validates the final result against its imported schema and routes its outcome.
 
-Valid uncertainty produces a declared outcome. API errors, timeouts, unavailable models, and schema failures produce failed or blocked attempts. They do not silently select another provider or an approval route. The policy configuration syntax remains a proposal; it does not allow arbitrary callbacks in route definitions.
+## Commit before advancing
 
-## Record a decision before advancing
+1. Record the attempt and frozen input references.
+2. Execute the Agent or Action under the applicable limits and cancellation rules.
+3. Validate its final result and resolve the `on` destination.
+4. Commit the result, route, loop counter update, pending next work, and events together.
+5. Dispatch the recorded next work.
 
-The runner uses the same sequence for a script, Advisor, or Jev decision:
+A duplicate response or stale attempt cannot create another transition or consume another repair. Attribute records to the workspace, run, and stage attempt.
 
-1. Record the attempt and frozen input references before invoking the decision source.
-2. Execute through its adapter under the applicable capacity, timeout, and cancellation rules.
-3. Validate the result and apply the frozen decision policy, when configured.
-4. Commit the accepted outcome, selected route, loop counter update, pending next work, and their events together.
-5. Dispatch the recorded next work after that transition is durable.
-
-Attribute each transition to its workspace, run, stage attempt, and decision source. A duplicate response or stale attempt cannot create another transition or consume another repair allowance.
-
-| State at restart | Recovery behavior |
+| State at restart | Behavior |
 | --- | --- |
-| Accepted decision and route are committed | Use the recorded transition and pending work. Do not ask the source to choose again. |
-| A matching response is durable but the route is not committed | Confirm that the attempt is still eligible, validate the saved response with the frozen policy, and commit the transition once. |
-| No response was saved | Record the interruption. An authorized retry creates a new attributable attempt; do not invent a result. |
+| Result and route committed | Reuse the recorded transition. Do not ask the source to choose again. |
+| Final Action or Agent result saved, route not committed | Check that the attempt remains eligible, validate the saved result, and commit its declared route once. |
+| No final result saved | Record interruption. Preserve any raw evidence. Reconcile or explicitly retry through a new attempt. |
 
-A provider may have completed a request before the service lost the response. A retry can make another model call. Durable transitions prevent duplicate workflow advancement; they do not guarantee exactly-once external requests. Side-effecting Actions still require the reconciliation rules in [Runs and traces](traces.md).
+A raw provider response is not a completed Action result. The runner does not reconstruct provider-specific decisions from it. Source-specific reconciliation can be added when required; otherwise the run remains blocked for an explicit decision. A provider call may have completed before its response was saved, so a retry may call it again. Durable transitions do not guarantee exactly-once external requests.
 
-## Share model capacity and evidence
+## Bound one repair loop
 
-Jev and other model-backed Actions acquire capacity from the same global model-call limit as Agents, across all workspaces. One provider request holds one slot until it settles. Waiting stages and local deterministic scripts do not consume model slots.
-
-Record the selected provider and model, input references, provider proposal, policy version and reason, accepted outcome, selected destination, timing, and reported usage. Missing usage remains unavailable. The graph highlights the committed route and the inspector explains any difference between the proposal and the accepted outcome.
-
-Keep model profiles explicit and frozen for the run. Replacing a decision adapter does not imply automatic model selection or fallback. Pi executes ordinary Agents; the planned Jev adapter uses its supported decision interface without assuming a chat or tool loop.
-
-## Route by outcome
+The [review workflow](workflows.md) declares one shared repair allowance:
 
 ```js
-// workflows/repair-demo.mjs
-import { Workflow } from "@runlane/sdk";
-import { implementer } from "../agents/implementer.mjs";
-import { correctness, maintainability } from "../agents/reviewers.mjs";
-import { checkDependencies } from "../actions/check-dependencies.mjs";
-
-export const repairDemo = new Workflow({
-	id: "repair-demo",
-	version: 1,
+loop: {
+	id: "repair",
 	entryStage: "implement",
-	loop: {
-		id: "repair",
-		entryStage: "implement",
-		maxReentries: 2,
-		onExhausted: "needs_input",
-	},
-	stages: [
-		{
-			id: "implement",
-			run: implementer,
-			next: "check",
-			on: { needs_input: { stop: "needs_input" } },
-		},
-		{
-			id: "check",
-			run: checkDependencies,
-			next: "review",
-			on: {
-				fail: { repeat: "repair" },
-				unknown: { stop: "needs_input" },
-			},
-		},
-		{
-			id: "review",
-			run: [
-				{ id: "correctness", agent: correctness },
-				{ id: "maintainability", agent: maintainability },
-			],
-			completion: "all-approved",
-			on: {
-				approved: { complete: true },
-				changes_requested: { repeat: "repair" },
-				needs_input: { stop: "needs_input" },
-			},
-		},
-	],
-});
+	maxReentries: 2,
+	onExhausted: "needs_input",
+}
 ```
 
-The check stage and review stage reference the same `repair` loop. The candidate contract's `completed` outcome advances to `check`; `needs_input` suspends execution. The check contract returns `pass`, `fail`, or `unknown`. These excerpts assume the workflow inputs and imported contracts described in [Define a workflow](workflows.md). The `all-approved` policy emits `approved` only when both reviewers approve the same candidate. Rejections do not carry separate limits. Each selected `repeat: "repair"` route consumes one shared re-entry.
+A failed check and a review round requesting changes both use `{ repeat: "repair" }`. The first implementation does not consume a re-entry. Two re-entries permit initial work plus two repairs. Iterations do not overlap.
 
-The runner validates each assignment result against its result contract before routing. The `completion: "all-approved"` policy emits `approved` only when every assigned reviewer returns `approved`. If one or more reviewers return `changes_requested`, that outcome selects the repair route after every assignment in the round has finished or been handled. A blocked reviewer takes precedence over `changes_requested`; resolve the blocker before routing a repair. A `needs_input` result suspends execution and leaves the run unfinished. An invalid result, failed process, timeout, or unavailable model blocks execution. It cannot select `next` or approve a candidate.
+Every designated reviewer inspects the same immutable candidate. Wait for every assignment to settle or be handled before aggregating. All must approve. Several rejections in one round consume one repair allowance. A blocked or invalid reviewer result prevents advancement; it is not a request to repair the candidate.
 
-Each `on` entry maps one exact outcome name to one route. A route has exactly one destination: `to`, `repeat`, `stop`, or `complete`. `to` names another stage. `stop` suspends stage execution with the named status. `needs_input` is nonterminal and remains unfinished until a person resolves or cancels it. `complete: true` marks successful workflow completion. `repeat` names a declared loop. The loop owns the entry stage, shared re-entry limit, and exhaustion status.
+A repair produces a new candidate and invalidates prior check and review evidence. Re-run the check and every designated reviewer. Commit the counter with the transition so a browser refresh, client reconnect, or daemon restart cannot grant extra repairs.
 
-## Bound a repair loop
+## Share capacity and trace
 
-`maxReentries: 2` permits the initial implementation and two later entries to `implement`. The first arrival is not a re-entry. Every route that references `repair` increments the same counter once. When the limit is exhausted, `onExhausted` selects `needs_input` instead of entering `implement` again.
+Agents and model-backed Actions, including a later Jev adapter, share the default limit of two model calls across all workspaces. Waiting stages and deterministic scripts do not hold model slots. Managed model calls use the shared provider path.
 
-The counter belongs to durable run state. Persist the selected route, counter update, and next attempt together so a restart cannot grant extra repairs. All reviewers in one review stage contribute to one stage outcome and one loop counter. Several reviewers requesting changes in that round consume one re-entry.
+The trace records source identity, input references, model when used, final result, supporting evidence, selected destination, timing, and reported usage. Missing usage stays unavailable. The graph highlights the committed route; the inspector shows the Action's evidence without re-running its logic.
 
-Allow one declared loop in the initial design. Its iterations do not overlap. Reject missing destinations, unknown outcomes, duplicate `next` and `on` handling, invalid limits, and unsupported graph cycles before a run starts. Keep each route visible in the graph and trace, including the source outcome, selected destination, counter, and remaining re-entries.
-
-## Keep attempts and evidence tied to a candidate
-
-Each parallel assignment has a stable ID within its stage. Assignments in one stage receive the same immutable run inputs and candidate reference. They have separate attempts and results. The stage aggregates those results using its declared success and outcome rules.
-
-When a repeat route starts a new implementation attempt, later review assignments inspect the new candidate. Evidence from an older candidate cannot approve the new one. An unavailable executable, invalid output, or model error is a blocker rather than a request to repair the candidate.
-
-Model profiles remain explicit on Agents and model-backed Actions and are frozen with the run. Routing cannot silently switch providers or models based on an outcome.
+Keep model selection explicit. Replacing a source does not imply provider fallback. The [first usable milestone](decisions.md#delivery-sequence) uses Pi Agents and scripts, with real graph and trace, before adding Jev.

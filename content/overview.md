@@ -15,14 +15,14 @@ An automation platform for developers to manage agents, compose workflows, and i
 | Workspaces | Register source roots and keep workflow definitions and execution records attributable. |
 | Workflows | Author stages, agents, scripts, routes, and triggers in `.mjs` files. |
 | Agents | Reuse configurations containing instructions, capabilities, result contracts, and selected models. |
-| Decisions | Use rules, scripts, Advisors, or Jev-backed Actions to choose among declared routes. |
+| Decisions | Return a final outcome from a script or Advisor; add Jev through an Action later. |
 | Runs | Start work and see which stages are queued, running, complete, or blocked. |
 | Trace | Inspect inputs, outputs, action calls, timing, usage, and routing decisions. |
 | Triggers | Start manually, then add calendar schedules through the same runner. |
 
-The delivery starts with a CLI and one foreground runner for the current user, then adds background daemon operation across workspaces. Durable trace belongs in the first runtime slice. The planned Desktop GUI adds the live graph and inspector through the same client interface.
+The first usable milestone is a real workflow controlled through the CLI and visible in the existing graph. Start with one Pi invocation and durable trace, then add checks, parallel review, bounded repair, and independent runs across workspaces. Connect React Flow before adding Jev, desktop packaging, or cron.
 
-The desktop client reuses the React UI. A separately delivered web product and a TUI are optional later clients. Closing an interface does not stop admitted background work.
+One foreground service owns execution and shared capacity. Background daemon launch and Desktop packaging follow that same core. The desktop client reuses the React UI; a separately delivered web product and a TUI remain optional. Closing a client does not stop admitted work while the service remains running.
 
 ## What stays below the product
 
@@ -37,14 +37,14 @@ Trusted workflow.mjs → Validate → Frozen workflow version
 Trigger + inputs → Run of that version → Stages
                                         ├─ Agents → allowed Actions
                                         ├─ Direct Actions
-                                        └─ Routes → next / repeat / stop / complete
+                                        └─ Routes → to / repeat / stop / complete
 ```
 
 The workflow file is the authoring source. React Flow displays the validated graph, run status, and trace. Its first version supports inspection and layout changes. Execution changes happen in code.
 
-Each run belongs to a registered workspace. One service manages all workspaces and their shared capacity. Keep definitions separate from their executions. Reuse one agent executor and a small set of action handlers. The proposed constructors create definitions only; the runner starts work after validation and admission.
+Each run belongs to a registered workspace. Definitions are plain objects with imported schemas. The core loads definitions, runs work through adapters, and stores its records. Shared types do not require parent classes. The runner starts work only after validation and admission.
 
-Decision sources are replaceable. The runner validates their results, applies declared policies, and persists the selected route before advancing. Model-backed decisions share the global model-call capacity. [Routing and loops](routing-loops.md) explains the contract and recovery behavior.
+Decision sources own their rules and return final outcomes with evidence. The runner validates one result schema and persists the declared route before advancing. It does not apply a generic confidence policy. Model-backed decisions share global capacity. [Routing and loops](routing-loops.md) explains the interface and recovery behavior.
 
 ## Read with your teammate
 

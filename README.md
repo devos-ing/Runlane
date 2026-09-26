@@ -6,11 +6,11 @@ Pi SDK execution and Pi durable persistence are planned integrations. This site 
 
 The agreed design uses `.mjs` workflow files to compose stages, configured agents, direct actions, and triggers. React Flow displays the validated graph and each run's trace. Execution changes happen in source files; canvas changes affect layout.
 
-[Routing and loops](content/routing-loops.md) defines replaceable decision sources using rules, scripts, Advisor Agents, or a planned Jev Action adapter. Sources share result validation, explicit destinations, model capacity, and durable transitions. No Jev adapter or live model integration is implemented by this site.
+[Routing and loops](content/routing-loops.md) defines final outcomes and explicit destinations. Decision rules stay inside their source; the runner shares validation, model capacity, and durable transitions. A later Jev Action owns its confidence rules. No Jev adapter or live model integration is implemented by this site.
 
-The delivery starts with a CLI and foreground runner, then adds a daemon shared by all of the current user's workspaces. Desktop is the planned graphical client using the same React UI and service. A separate web product and a TUI remain later options. Read [CLI, daemon, and workspaces](content/cli-workspaces.md) for workspace identity, proposed commands, and lifecycle rules.
+The first usable milestone combines CLI control, a real workflow with checks and parallel review, a bounded repair loop, and the existing React Flow view connected to live records. A foreground service manages workspaces and shared capacity. Background daemon launch, Jev, desktop packaging, and cron follow that milestone. Read [CLI, daemon, and workspaces](content/cli-workspaces.md) for ownership and lifecycle rules.
 
-Read [the glossary](CONTEXT.md), [workflow authoring](content/workflows.md), and [decisions and delivery](content/decisions.md) for the current design. The `@runlane/sdk` examples are proposed APIs, not an available package.
+Read [the glossary](CONTEXT.md), [workflow authoring](content/workflows.md), and [decisions and delivery](content/decisions.md) for the current design. The plain-object examples and imported schemas are proposals. Public SDK packaging is deferred.
 
 Before planning development, read [Development scope](content/development-scope.md). It defines the goal, reason, approach, boundaries, and completion evidence for each work item. [AGENTS.md](AGENTS.md) points coding agents to the same rules.
 

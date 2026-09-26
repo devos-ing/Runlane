@@ -1,64 +1,27 @@
 # Define a workflow
 
-Runlane workflows are declarative graphs of stages. A stage runs an `Agent` or an `Action`. `next` names the stage for a validated success outcome. The `on` map routes named outcomes from the result contract. A decision source can use rules, a script, an Advisor, or Jev while the destination map stays explicit.
+A workflow is a plain object exported from a trusted `.mjs` module. It declares stages and maps result outcomes to destinations through `on`. Agents and Actions are reusable configuration values referenced by those stages.
 
-The examples use the proposed `@runlane/sdk` API. The package and runner are not implemented. SDK constructors and trigger factories return configuration values. They do not start runs, invoke agents, execute scripts, or create schedules. Loading a `.mjs` module executes its JavaScript and imports.
+These are proposed definitions, not an implemented SDK. The first authoring format does not require constructors, inheritance, or a global contract registry. Optional `.ts` authoring depends on the chosen loader.
 
-## Author definitions in JavaScript
+## A bounded review workflow
 
-Use `.mjs` files as the reference format. A project may author `.ts` files when its chosen loader supports them. Constructors create definitions from data; keep callbacks and closures out of those definitions. Put custom runtime logic in referenced Actions or Agents so it has an attributable attempt and trace.
-
-```text
-runlane/
-  workflows/change-review.mjs
-  agents/
-    advisor.mjs
-    implementer.mjs
-    reviewers.mjs
-  actions/check-dependencies.mjs
-  prompts/
-    advisor.md
-    implementer.md
-    reviewer.md
-  scripts/check-dependencies.mjs
-  package.json
-  bun.lock
-```
-
-Register trusted roots explicitly in application configuration. Importing a `.mjs` file executes its JavaScript, including its imports. A trusted root controls what the application loads. It does not sandbox JavaScript or packages. Definition validation checks shape and policy; it does not make author code safe. Only load roots whose code and dependencies you trust.
-
-The CLI selects a registered Workspace before validation or execution. Workflow IDs are local to that workspace. The service attaches workspace ownership to the registration and run; reusable `.mjs` files do not hard-code a workspace ID. See [CLI, daemon, and workspaces](cli-workspaces.md).
-
-## A complete review workflow
+This example imports Agent and Action definitions from [Agents and actions](agents-actions.md). Each definition imports its result schema once. The workflow's `on` maps must cover the outcomes declared by those schemas.
 
 ```js
 // workflows/change-review.mjs
-import { Trigger, Workflow } from "@runlane/sdk";
 import { advisor } from "../agents/advisor.mjs";
 import { implementer } from "../agents/implementer.mjs";
 import { correctness, maintainability } from "../agents/reviewers.mjs";
 import { checkDependencies } from "../actions/check-dependencies.mjs";
+import { taskInput } from "../schemas/inputs.mjs";
 
-export const changeReview = new Workflow({
+export const changeReview = {
 	id: "change-review",
 	version: 1,
-	inputs: {
-		task: { type: "string", required: true },
-		repository: { type: "string", required: true },
-	},
+	input: taskInput,
 	entryStage: "plan",
-	triggers: [
-		Trigger.manual({ id: "manual-change-review", version: 1 }),
-		Trigger.cron("0 9 * * 1-5", {
-			id: "weekday-dependency-audit",
-			version: 1,
-			timezone: "Asia/Hong_Kong",
-			inputs: { repository: "example/service", task: "Review dependency changes" },
-			overlapPolicy: "skip-unfinished",
-			offlinePolicy: "skip",
-			enabled: false,
-		}),
-	],
+	triggers: [{ kind: "manual", id: "manual-change-review", version: 1 }],
 	loop: {
 		id: "repair",
 		entryStage: "implement",
@@ -69,20 +32,24 @@ export const changeReview = new Workflow({
 		{
 			id: "plan",
 			run: advisor,
-			next: "implement",
-			on: { needs_input: { stop: "needs_input" } },
+			on: {
+				ready: { to: "implement" },
+				needs_input: { stop: "needs_input" },
+			},
 		},
 		{
 			id: "implement",
 			run: implementer,
-			next: "check",
-			on: { needs_input: { stop: "needs_input" } },
+			on: {
+				completed: { to: "check" },
+				needs_input: { stop: "needs_input" },
+			},
 		},
 		{
 			id: "check",
 			run: checkDependencies,
-			next: "review",
 			on: {
+				pass: { to: "review" },
 				fail: { repeat: "repair" },
 				unknown: { stop: "needs_input" },
 			},
@@ -101,39 +68,54 @@ export const changeReview = new Workflow({
 			},
 		},
 	],
-});
+};
 ```
 
-Each agent contract names its accepted outcomes in the `outcome` field. The plan agent returns `ready` or `needs_input`. The implementer returns `completed` or `needs_input`. The check action returns `pass`, `fail`, or `unknown`. Each reviewer returns `approved`, `changes_requested`, or `needs_input`. `next` handles the success outcomes `ready`, `completed`, and `pass`. The `on` map handles the other outcomes. The result contract declares which outcome counts as success. A definition cannot route one outcome through both `next` and `on`.
+The input schema defines the task and source context required by this workflow. The implementation result supplies a candidate reference. Checks and both reviewers inspect that same immutable candidate. A repair receives the previous round's findings and produces a new candidate.
 
-The review assignments receive the same frozen inputs and candidate reference. Each has a stable assignment ID and a separate result. The `all-approved` policy emits `approved` only when both reviewers return valid approvals for the same candidate. A dependency check failure and a review request both repeat the same `repair` loop and share its counter. Wait until both reviewers finish or are handled before routing the stage. A blocked reviewer takes precedence over `changes_requested`; reconcile or resolve the blocker before considering a repair. Invalid output and execution failures block the run; they cannot count as approval or as a valid `fail` outcome.
+Every designated reviewer must approve. Wait for all assignments to settle or be handled before aggregating the round. A blocked reviewer prevents advancement. Several reviewers requesting changes consume one repair allowance. Check failures use that same counter. The initial implementation plus two repairs is the maximum; iterations do not overlap.
 
-The workflow permits one declared loop. Its iterations do not overlap. The loop allows the initial implementation and at most two re-entries. When exhausted, it suspends the run as `needs_input`; the run remains unfinished.
+The initial format uses only `on` for outcome transitions. A `next` shorthand would introduce another success-outcome convention and is deferred. All destinations and result-schema outcomes are validated before admission.
 
-Each invocation receives frozen workflow inputs and the relevant validated prior results. The implementation result supplies the candidate reference for checks and review. A repair includes the previous round's findings. Resolve those references from the current round; an older candidate's evidence cannot satisfy a new round.
+## Keep authoring reusable
 
-Both trigger definitions belong to this workflow. The cron definition is disabled. The trigger service registers it only through an explicit application action after validation. See [Triggers and schedules](triggers.md) for occurrence handling.
+```text
+runlane/
+  workflows/change-review.mjs
+  agents/advisor.mjs
+  agents/implementer.mjs
+  agents/reviewers.mjs
+  actions/check-dependencies.mjs
+  schemas/inputs.mjs
+  schemas/results.mjs
+  prompts/
+  scripts/check-dependencies.mjs
+  package.json
+  bun.lock
+```
 
-## Replace decision logic without replacing the graph
+The CLI selects a registered Workspace before validation or execution. Workflow IDs are local to that workspace. The service records ownership; shared modules do not hard-code workspace IDs.
 
-A decision stage runs a configured Agent or Action and maps its accepted outcomes through `on`. The source may change from a script to an Advisor or Jev adapter if its contracts remain compatible. Declare every possible destination and any decision policy before the run starts.
+Definitions contain data and source references. Importing `.mjs` still executes JavaScript, so roots and dependencies must be explicitly trusted. Reading a definition is not an instruction to start its stages or enable its schedules. Put runtime behavior in referenced Agents and Actions so it has an attributable attempt and trace.
 
-Policy-adjusted outcomes, including `needs_input`, must belong to the result contract. API errors and malformed results remain execution failures. They cannot count as an ordinary decision or bypass the review aggregation in the coding template. See [Routing and loops](routing-loops.md) for the decision result and recovery contract.
+## Route results without a policy framework
 
-## Freeze executable inputs for restart
+A decision source can be a script, Advisor, or later a Jev Action. It returns the final outcome and supporting evidence. Confidence rules and provider-specific handling belong inside that source. The runner validates the result schema, resolves `on`, and records the transition. It does not reinterpret confidence.
 
-At admission, resolve the workspace, workflow, trigger, inputs, agents, model profiles, action definitions, and policies into a run snapshot. Include decision-source identity, allowed choices, adapter version, and any confidence policy. Record workspace identity and the execution directory separately from the source root. The snapshot must identify the exact prompt and script contents and the dependency versions needed to resume the run. Record content hashes and retain an immutable source bundle or source revision, including the package lockfile. JSON configuration alone cannot restore executable files.
+A replacement source must satisfy the same input and result schemas. Replacing it does not alter the allowed destinations, permissions, designated-reviewer rule, or repair limit. See [Routing and loops](routing-loops.md).
 
-Store definition data, file references, and version identifiers. Do not serialize JavaScript closures. A restart uses the recorded snapshot and must stop with a visible blocker if required source or dependency versions are unavailable. Source edits apply to future runs.
+## Retain a controlled source set
 
-The runtime defaults to two active runs and two concurrent model calls across all registered workspaces. Agents and model-backed decision Actions share these limits. Configure those service-wide limits explicitly. Eligible work waits in a visible queued state when either limit is full.
+At admission, freeze resolved definitions and schemas, input references, model profiles, source identity, and the execution directory. Retain the explicitly supported workflow modules, prompts, scripts, schemas, and lockfile in an immutable source directory or a small retained copy. Record adapter and dependency versions used by the invocation.
 
-## Keep product concepts separate
+The first milestone supports one known source set and an existing, verified dependency environment. Imports or resources outside that supported set block admission. It does not discover and bundle arbitrary transitive dependencies, build containers, reconstruct environments, or serialize closures.
 
-The workflow definition is independent of the React Flow display. The UI renders the graph and run events; it does not decide execution order.
+Recovery uses the recorded sources and verifies that the required environment remains available. Missing, changed, or unsupported inputs leave the run blocked. A hash identifies content but cannot restore a missing file. Edits affect new runs; they must not silently change a pending invocation in an existing run.
 
-`Agent` is a reusable definition, not a role subclass or a stage binding. Import an existing agent definition or preset into another workflow when its instructions and result contract fit. The Advisor is an example preset. Parallel stage assignments add stable local IDs without copying or mutating the referenced agent.
+Commit completed results, selected routes, loop counters, and pending next work before dispatch. An uncertain external side effect requires reconciliation; automatic replay is not a general recovery strategy. [Runs and traces](traces.md) describes the recorded evidence.
 
-The SDK may use an internal `Executable` contract for agents and actions. It is an implementation detail. Contributors create `Agent` or action definitions and do not extend a public base class.
+## Share execution capacity
 
-Runlane does not require tickets, Git worktrees, commits, or pull requests. A coding workflow may add those as its own inputs and actions. The platform does not promise GitHub Actions YAML compatibility, hosted runners, or automatic agent spawning.
+The service defaults to two active runs and two concurrent model calls across all registered workspaces. Independent runs and parallel reviewers share those configurable limits. Waiting for capacity is visible in CLI status and the live graph.
+
+The first usable milestone includes both forms of parallelism and connects the existing React Flow view to real events. Jev, background launch management, desktop packaging, and cron follow that milestone. Tickets, repository provisioning, and PR publication remain optional coding-template capabilities.
