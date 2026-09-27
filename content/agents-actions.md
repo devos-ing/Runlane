@@ -27,6 +27,8 @@ The current Profile resolves to an explicit Pi provider and model. The target Pr
 
 Runtime subclasses implement native validation and execution. Agent authors reuse registered Runtimes without writing a subclass. A Profile change applies to new runs; admitted attempts keep their recorded Runtime, model, effort, and implementation version. [Runtime parent class](runtimes.md) separates the target contract from the current Pi-only CLI.
 
+The planned TypeScript name `AgentDefinition` distinguishes this reusable data from Pi's executing Agent class. PiRuntime creates a native AgentSession for each attempt and reuses Pi's model catalog and tools. Keep Agent reuse as imports and object composition; no Agent subclass or separate catalog service is needed. [Pi reuse](pi-integration.md#agent-definitions-and-native-instances) defines this separation.
+
 ## Define each result schema once
 
 The imported schema is the source of truth for the result shape and allowed outcomes. Do not combine a contract registry ID with a second `outcomes` list that must stay synchronized. The runner validates results against the schema and verifies that `on` covers its outcome enum. Route mappings add destinations; they do not redefine the schema.

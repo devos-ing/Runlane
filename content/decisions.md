@@ -27,6 +27,8 @@ Use [Development scope](development-scope.md) to bound a work item by its goal, 
 - Connect the existing React Flow view to real events in the first usable milestone, before Jev integration or desktop packaging.
 - Use React Flow for viewing execution, inspecting trace, and arranging layout. Edit execution logic in source files.
 - Reuse Pi as the first Runtime implementation and Pi durable as the application persistence foundation for all Runtimes.
+- Reuse the coding-agent SDK entry point, ModelRuntime catalog/authentication, SessionManager, and approved Pi tools inside PiRuntime. Do not build a second agent loop, model registry, credential store, or transcript database.
+- Keep Runlane Agent as reusable definition data, with the planned TypeScript name `AgentDefinition`. Native Pi Agent instances and their mutable state belong to individual attempts.
 - Let contributors add agents, prompts, and scripts through validated definitions.
 - Keep explicit profiles, bounded loops, and defaults of two active runs and two simultaneous model calls across all workspaces.
 - Verify native request control before enabling additional Runtimes under that model-call limit. An external Runtime attempt can contain several requests or subagents; an attempt limit needs a separate, explicit policy decision.
@@ -52,7 +54,7 @@ The detailed contract is in [CLI, daemon, and workspaces](cli-workspaces.md); [S
 | Documentation | Markdown site, shared vocabulary, interactive React Flow demonstration. | This preview |
 | A. Execution proof | Workspace registration, foreground service, one tool-free Pi Agent, JSON input/result validation, Pi durable records, CLI status, logs, and cancellation. | Implemented subset; see quickstart |
 | Step naming alignment | Rename the definition, snapshot, and trace fields together, update the runnable example, and preserve access to existing run history. No new execution behavior. | Next; not implemented by this docs change |
-| Runtime extraction | Introduce the parent class and `PiRuntime`, make Profile Runtime selection explicit, centralize result validation, and preserve existing Pi execution and readable history. | After naming alignment, before B; design only |
+| Runtime extraction | Introduce the parent and `PiRuntime` by reusing the working SDK path and model catalog. Make Profile selection explicit, centralize result validation, and preserve cancellation, trace ordering, and readable history. | Pi reuse steps P1–P2 after naming alignment; design only |
 | B. Real workflow | Workflow steps execute Plan → Implement → Script checks → parallel Review with one shared two-repair loop. Add `.mjs` and `.sh` Script Actions, and exercise independent runs across two workspaces under shared capacity. | Planned |
 | C. Live observation | Connect the existing React Flow view and inspector to those real records. Show active work, results, failures, and the chosen repair route. | Planned |
 | Codex Runtime | Prove a second subclass with explicit settings, observable events, cancellation, structured results, and enforceable capacity. | After A–C; native integration unverified |
@@ -97,18 +99,40 @@ The [Runtime parent class](runtimes.md) owns the execution contract. This work r
 | --- | --- |
 | Goal and reason | Let one Runner execute an Agent through a selected coding-agent system while keeping workflow behavior and evidence consistent. |
 | Approach | Extract the verified Pi invocation into `PiRuntime extends Runtime`. Put shared identity and cancellation checks in `run`; native validation and execution belong to subclass methods. |
-| Current task | Update design documentation, terminology, and this plan. Add a navigable Runtime page. No executable Runtime implementation or dependency change. |
+| Documentation scope | Record the Runtime parent contract, concrete Pi reuse mapping, terminology, and implementation sequence. No executable Runtime implementation or dependency change. |
 | Next implementation | Introduce the parent and Pi subclass, explicit Profile Runtime ID, versioned execution metadata, and common result validation. Update the runnable example and quickstart with the code. |
 | Boundaries | Preserve exact model and effort, capability restrictions, cancellation during startup, atomic completion, global capacity, and interruption without automatic replay. Keep historical records readable. |
 | Exclusions | Codex and Claude execution in the Pi extraction, a plugin loader, shared process pools, public SDK packaging, native transcript migration, and a session-management UI. |
 | Current completion evidence | Documentation links and navigation agree, stale no-base-class guidance is removed, and lint/typecheck/site build pass. These checks do not verify the proposed integrations. |
-| Implementation completion evidence | One focused permitted integration check through the real Pi subclass covers accepted execution plus unsupported settings, invalid output, startup cancellation, interruption, and historical record access. No unit or end-to-end tests. |
+| Implementation completion evidence | Focused permitted integration evidence through the real Pi subclass covers accepted execution, catalog rejection, invalid output, startup cancellation, interruption, historical record access, and completion waiting for trace writes. No unit or end-to-end tests. |
 
 The extraction moves provider lookup and Pi's `ModelRuntime` behind `PiRuntime`. It moves final schema and outcome-route checks into the Runner so later subclasses cannot bypass them. Preserve the same sanitization and cleanup requirements. New snapshots record Runtime ID, implementation version, and resolved settings; legacy slice-A records are identified explicitly as Pi records without re-execution or rewriting their original evidence.
 
 The Codex slice then proves that two subclasses satisfy the same contract. Verify native permission enforcement and model-call accounting before enabling admission; limit claims must include native subagents and retries. If the protocol cannot enforce the agreed model-call policy, record that blocker and decide separately whether an attempt-based policy is acceptable. Claude follows the same acceptance boundary after Codex provides concrete evidence.
 
 Both integrations must preserve Runlane's result schema, observable progress, bounded errors, cancellation, and checkpoint rules. Native session IDs are evidence, not automatic restart instructions. Authentication and native session ownership stay inside each integration.
+
+## Pi reuse implementation plan
+
+The [Pi reuse map](pi-integration.md#reuse-map) defines what to delegate to the installed 0.87.1 SDK. Keep the agreed Runtime parent class. Its Pi subclass composes `createAgentSession`, ModelRuntime, explicit resource loading, and SessionManager. Retain the current package versions and RunStore implementation.
+
+Step naming alignment remains the prerequisite. The following steps refine the existing Runtime extraction and slices B–C; they do not create another product milestone or authorize execution during this documentation task.
+
+| Step | Implementation and ownership | Completion evidence |
+| --- | --- | --- |
+| P1. Extract the verified Pi path | Move `executeAgent` and `availableModel` from `runtime/agent.ts` into PiRuntime behind Runtime. Keep Pi's ModelRuntime private. Use `AgentDefinition` for reusable authoring data, add the explicit Runtime selector and versioned records, and move result-schema/route checks into the Runner. | The same tool-free task executes with the exact selected model and effort. Unknown or unavailable models are rejected before dispatch. Legacy Pi history remains readable without replay. No duplicate catalog or fallback path. |
+| P2. Preserve lifecycle and trace | Reuse Pi's prompt, event, abort, and disposal APIs. Keep native sessions isolated by attempt, bridge synchronous session events to bounded ordered writes, and wait for those writes before completion. Retain the existing cancellation check at the provider stream boundary. | A permitted real-dependency integration check covers cancellation during startup, event-write failure, durable completion ordering, and interrupted reopen. A native final message alone cannot advance the workflow. |
+| P3. Enable explicit tools in slice B | Map declared capabilities to Pi tools and explicitly trusted resources. Keep automatic resource discovery, native retries, and compaction disabled initially. Account for each managed model request until its stream settles; aggregate completed-message usage once. | Read-only reviewers have only their allowed tools. Two independent attempts keep separate context and cancellation. Multi-turn calls obey shared capacity and do not undercount usage; cancellation releases a settled request's permit. |
+| P4. Compose the real workflow in slice B | Reuse the Pi execution path for Plan, Implement, and every Reviewer. Add direct `.mjs` and `.sh` Script Actions, step attempts, shared review aggregation, and durable repair counters in the Runner. Reuse Pi durable commits. | An accepted flow, a repair round, and an exhausted allowance demonstrate all-reviewers approval, the two-repair bound, and preserved state. Invalid results cannot route successfully. Independent runs across two workspaces share capacity. |
+| P5. Connect observation in slice C | Project persisted Runlane events into the existing React Flow view and inspector. Reuse the service operations used by CLI status and logs. | The graph and CLI agree on the same run, including active work, repair, failure, and reconnect. The view does not invoke Pi to reconstruct history. |
+
+Use the smallest permitted integration evidence for each changed behavior. Extend the existing scenario when it can demonstrate a new load-bearing invariant; do not add unit tests, end-to-end tests, or a second fake-agent framework. Preserve validation, ownership, sanitization, and interruption handling throughout.
+
+P1–P2 preserve the single-Agent proof while changing its execution structure. P3–P4 introduce the tool-enabled workflow already planned for slice B. P5 completes the first usable milestone. Codex and Claude follow that milestone and validate their own native model support; Pi's catalog is not their capability authority.
+
+Model catalog display, custom provider configuration, native session continuation, and automatic catalog refresh remain separate future needs. The first extraction keeps `modelsPath: null` and `allowModelNetwork: false`; it adds no catalog database, agent registry, or new CLI command. Existing `.mjs` imports are enough to share Agent definitions.
+
+Revisit the affected integration if the pinned SDK cannot meet cancellation, event-write ordering, permission, or model-call capacity requirements. Record the failing evidence before changing versions or expanding the Runtime interface. The present plan update does not run models or claim these future checks have passed.
 
 ## First usable milestone
 

@@ -14,6 +14,10 @@ Runlane has five authoring components: Workflow, Agent, Action, Trigger, and Pro
 
 Profiles remain configuration data. The current CLI accepts provider and model through `modelProfiles` and `modelProfile`; reasoning effort stays explicit on the Agent. The planned Runtime selector preserves these keys. A general profile inheritance system is unnecessary.
 
+An Agent is a reusable work definition, with `AgentDefinition` as the planned TypeScript name. A native agent is the executing instance owned by a Runtime. For Pi, the coding-agent SDK creates that instance; Runlane does not recreate its model/tool loop.
+
+A model catalog describes models known to an execution system. A Profile selects a model for work. PiRuntime reuses Pi's ModelRuntime catalog and authentication. Reusable Agent definitions are shared through imports, without a separate AgentCatalog service. [Pi reuse](pi-integration.md) records the mapping and implementation requirements.
+
 ## Runtime executes an Agent
 
 The agreed execution design uses a `Runtime` parent class with concrete `PiRuntime`, `CodexRuntime`, and `ClaudeRuntime` subclasses. Its shared `run` method checks identity and cancellation around validation and execution. Subclasses validate native settings, execute work, translate observable events, and clean up their resources.

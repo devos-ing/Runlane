@@ -34,6 +34,7 @@ Contributors configure Workflow, Agent, Action, Trigger, and Profile. Workflow o
 | Review | Reviewer Agents and deterministic checking Actions inside a workflow. | Preserve designated-reviewer approval rules. A Trigger requests a new Run; Review assesses existing work. |
 | Orchestration | Admission, attempts, result validation, routing, cancellation, and recovery. | Each Runtime owns its native agent loop and context. Keep session management below the product. |
 | Runtime extensions | One parent class with shared invocation checks and concrete native integrations. | Extract Pi first. Keep authoring data separate from instances, preserve global capacity, and gate additional integrations on real evidence. |
+| Pi reuse | Map retained Agent definitions to the existing SDK and its model catalog, tools, events, and native history. | Keep provider authentication and native state inside PiRuntime. Reuse RunStore/Pi durable; no new agent loop, model registry, credential store, or transcript database. |
 | Decisions | Replaceable sources that return a schema-validated final outcome and evidence. | Keep confidence rules inside the relevant Action, destinations explicit, and model calls within shared capacity. No generic DecisionPolicy engine. |
 | Observability | Run history, graph state, trace events, and evidence references. | Show observable execution. Simulated events never prove a live integration. |
 | Persistence | Run identity, ordering, loop counters, controlled source references, and atomic transitions. | Verify Pi durable first. Block unsupported recovery rather than building a general environment restorer or another conversation store. |
@@ -76,6 +77,8 @@ Planning, implementation, and review use this same record. Planning identifies t
 | Stop or revisit | Pi durable cannot meet the required atomic transition, the selected Pi version fails the required lifecycle, or source retention requires capabilities outside this slice. Record the evidence and resolve the affected design choice. |
 
 Slice A is implemented as a bounded integration proof, not completion of the product milestone. Step naming alignment and then the Pi Runtime extraction precede slice B; each must preserve readable history. The Runtime parent design does not claim implementation. Slices B and C add the bounded workflow and live graph. Their acceptance evidence must cover `.mjs` and `.sh` Script Actions, a real review result, a repair round, a visible failure, both forms of parallelism, shared capacity, and preserved state on reconnect or restart.
+
+The [Pi reuse implementation plan](decisions.md#pi-reuse-implementation-plan) divides that work into extraction, lifecycle preservation, explicit tools, workflow composition, and live observation. Keep Pi 0.87.1 pinned during extraction and prove the adapter's event-write and request-capacity behavior before enabling broader SDK features.
 
 Use the existing graph for that evidence before adding Jev or desktop packaging. Source retention starts with a controlled set of known files and a verified dependency environment. Unsupported or missing inputs block the run. These boundaries keep the milestone small without dropping validation, recovery, or the user's required parallel behavior.
 

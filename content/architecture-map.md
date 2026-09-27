@@ -28,6 +28,8 @@ The Runtime handles the native agent loop, observable progress, and cleanup. The
 
 The [Runtime contract](runtimes.md) defines cancellation, native references, and implementation boundaries. The first extraction reuses the working Pi path; Codex and Claude integrations remain later work.
 
+Inside PiRuntime, reuse Pi's AgentSession, ModelRuntime catalog/authentication, resource loader, tools, and SessionManager. The Agent box represents reusable definition data, not another agent engine. The [Pi reuse plan](pi-integration.md) makes that delegation explicit without changing the diagram's ownership relationships.
+
 ## The review and repair loop
 
 [Open the workflow diagram](/diagrams/review.html)

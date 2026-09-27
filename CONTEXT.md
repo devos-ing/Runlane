@@ -19,8 +19,12 @@ A locally identified execution position within a Workflow that runs Agents or Ac
 _Avoid_: Stage as a separate component
 
 **Agent**:
-A reusable configuration containing instructions, capabilities, a profile, reasoning effort, and a result contract.
-_Avoid_: Agent binding as a separate public configuration type
+A reusable work definition containing instructions, capabilities, a profile, reasoning effort, and input and result contracts. Each use creates separate execution state.
+_Avoid_: A running native agent or a separate Agent binding configuration
+
+**Native agent**:
+An executing agent owned by its selected Runtime, with its own conversation, tool activity, and cancellation state.
+_Avoid_: A reusable Agent definition or a Workflow Run as synonyms
 
 **Agent assignment**:
 The use of an Agent in a step, identified separately from other uses of the same Agent.
@@ -31,6 +35,10 @@ _Avoid_: Route
 
 **Profile**:
 Saved execution settings referenced by an Agent or a model-backed Action. An Agent Profile selects a Runtime and its supported provider and model settings.
+
+**Model catalog**:
+The models and model metadata known to an execution system. A catalog describes choices; a Profile records a choice for use by work.
+_Avoid_: Agent catalog, workflow registry, or credential store as synonyms
 
 **Runtime**:
 The execution system selected for an Agent attempt, responsible for its agent loop, native context, and observable progress.

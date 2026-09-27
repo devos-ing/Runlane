@@ -8,6 +8,8 @@ This is an agreed design, not an implemented API. The CLI proof still invokes Pi
 
 Workflow, Agent, Action, Trigger, and Profile remain authoring data. Runtime is the execution extension that contributors subclass when adding another coding-agent system. There is no separate `AgentHarness` object or additional adapter class around each Runtime.
 
+The [Pi reuse plan](pi-integration.md) keeps the first subclass small. PiRuntime composes Pi's existing agent SDK, model catalog, authentication, and native history. Runlane's Agent is a reusable definition, named `AgentDefinition` in the planned TypeScript code; Pi's stateful Agent is an implementation detail of a native attempt. PiRuntime extends Runtime, not Pi's Agent class.
+
 ## Responsibilities
 
 | Owner | Responsibility |
@@ -125,11 +127,15 @@ The Runner supplies a timeout-bound cancellation signal. Checks before and after
 
 The service may reuse one Runtime instance for concurrent attempts. Instructions, working directories, native sessions, output, and cancellation state remain local to each invocation. The base class has no mutable current-session field.
 
+PiRuntime may share its SDK ModelRuntime for provider/model lookup while creating a separate AgentSession and SessionManager per attempt. Reuse the SDK catalog instead of adding catalog state or discovery methods to the parent. `modelsPath: null` and `allowModelNetwork: false` remain the extraction defaults. Other subclasses validate against their own execution systems.
+
 ## Events and completion
 
 The subclass awaits `emit` for the `started` event before the first task request or tool side effect. That event includes the confirmed Runtime, model and effort, implementation version, and native execution reference when available. An execution reference contains the Runtime ID and opaque native identifiers or private paths, never credentials. If the native protocol reveals an identifier only after dispatch, the Runner records dispatch intent first and the subclass emits the identifier when received. That interval remains an interruption risk, not a safe replay point.
 
 The Runner binds events to the request's workspace, run, step, and attempt. It assigns durable ordering and rejects stale delivery. Runtime events contain bounded observable activity and reported usage. They do not claim access to hidden reasoning. Missing usage remains unavailable; cumulative native usage must not be reported as per-attempt usage without a valid baseline.
+
+The Pi adapter must bridge its pinned SDK's synchronous AgentSession listener to this awaited event contract. Keep event writes bounded and ordered, handle write failure, and await pending writes before successful completion. Passing an async callback to `session.subscribe()` alone does not provide that guarantee. See [Pi event ordering](pi-integration.md#preserve-event-ordering-and-cancellation).
 
 `execute` returns only after native work has settled and cleanup has completed. The subclass converts its native response to `output`; the Runner validates it against the retained result schema. It then commits the result, route, and completion event together before starting the next step. Native process exit or a final text message alone does not mark a workflow successful.
 
@@ -153,7 +159,7 @@ The Runtime contract above does not claim to solve native request scheduling. Ad
 
 | Existing code | Planned change |
 | --- | --- |
-| `runtime/agent.ts` | Move Pi execution, model lookup, authentication integration, and native cleanup into `PiRuntime`. Keep `ModelRuntime` private to that implementation. |
+| `runtime/agent.ts` | Move the existing `createAgentSession` path, catalog lookup, authentication integration, and cleanup into `PiRuntime`. Compose the SDK objects and keep `ModelRuntime` private; reuse their implementations. |
 | `runtime/service.ts` | Resolve the Runtime by Profile ID, call preflight validation and `run`, and keep scheduling and all durable transitions. |
 | `runtime/definitions.ts` | Validate the target Profile shape and freeze Runtime ID, implementation version, and resolved settings. |
 | Agent result validation | Move schema and route validation from the Pi-specific path into the shared Runner completion path. |
