@@ -21,6 +21,8 @@ The five authoring components are Workflow, Agent, Action, Trigger, and Profile.
 
 The agreed [Runtime parent class](content/runtimes.md) provides the Agent execution extension, with planned Pi, Codex, and Claude subclasses. Agent Profiles select a Runtime by ID. The parent class and selector are not implemented: Pi extraction follows Step naming alignment, and additional integrations follow the first usable milestone. The [delivery plan](content/decisions.md#runtime-extraction-and-later-integrations) records the migration and integration checks.
 
+The [Pi reuse mapping](content/pi-integration.md) delegates native execution, model catalog, authentication, tools, and conversation history to the existing SDK. The [implementation plan](content/decisions.md#pi-reuse-implementation-plan) keeps Runlane focused on definition loading, workflow scheduling, validated results, checkpoints, and observation.
+
 [Routing and loops](content/routing-loops.md) defines final outcomes and explicit destinations. The current runner accepts only completion or `needs_input` from one Agent. Multi-step routes, scripts, bounded loops, and Jev remain planned.
 
 The first usable milestone combines CLI control, a real workflow with checks and parallel review, a bounded repair loop, and the existing React Flow view connected to live records. A foreground service manages workspaces and shared capacity. Background daemon launch, Jev, desktop packaging, and cron follow that milestone. Read [CLI, daemon, and workspaces](content/cli-workspaces.md) for ownership and lifecycle rules.

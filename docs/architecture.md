@@ -17,6 +17,8 @@ The canonical design term is Step. Current code and stored records still use `st
 
 The CLI sends a request to the local service. The service resolves the workspace and definition, validates input and model availability, commits a queued run, and returns its ID. Scheduling and execution continue after the CLI disconnects. Agent completion, result, selected terminal route, and final lifecycle events are one durable checkpoint update.
 
+The service already uses Pi's ModelRuntime catalog to resolve exact provider/model choices and configured availability. Its initialization uses `modelsPath: null` and `allowModelNetwork: false`. `runtime/agent.ts` composes `createAgentSession`, explicit DefaultResourceLoader settings, and SessionManager; it does not implement another agent loop. Tool use and automatic retries/compaction are disabled in the proof.
+
 ## Ownership and persistence
 
 `owner.sqlite` holds an exclusive transaction for the service lifetime. It is an ownership lock only. A paused process keeps it; process death releases it. Descriptor removal and storage cleanup happen before releasing ownership.
@@ -46,3 +48,5 @@ The current entry point is `bun run runlane`. A globally installed CLI, backgrou
 The agreed [Runtime parent class](../content/runtimes.md) is not implemented here. After Step naming alignment, extract `runtime/agent.ts` into `PiRuntime extends Runtime`, move result-schema and route checks into the shared Runner path, and add an explicit Runtime ID to Agent Profiles. Pi's `ModelRuntime` becomes private to the Pi subclass. Version snapshots and native execution references while preserving existing Pi run history without replay.
 
 Codex and Claude subclasses follow the first usable milestone and require their own integration evidence. Workflow scheduling, capacity, and Pi durable application storage remain shared. The [delivery plan](../content/decisions.md#runtime-extraction-and-later-integrations) owns the scope and acceptance requirements.
+
+The [Pi reuse plan](../content/decisions.md#pi-reuse-implementation-plan) preserves those existing SDK calls and separates reusable Agent definitions from native instances. Broader trace and tool support must account for the pinned SDK's synchronous session listeners and usage across multiple assistant messages. These are planned integration requirements, not behavior already demonstrated by the single-response proof.
